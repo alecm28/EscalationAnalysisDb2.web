@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- título dinámico de la página -->
+    <title>@ViewData["Title"] - EscalationAnalysisDb2</title>
+
+    <!-- estilos principales -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+
+<body>
+
+    <!-- barra superior -->
+    <div class="topbar">
+        <div class="d-flex align-items-center w-100 justify-content-between">
+
+            <!-- sección izquierda del topbar -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- icono tipo menú -->
+                <span onclick="toggleSidebar()" style="font-size:20px; cursor:pointer;">☰</span>
+
+                <!-- logo o nombre del sistema -->
+                <span style="font-size:22px; font-weight:500;">Logo</span>
+            </div>
+
+            <!-- sección derecha (usuario) -->
+            <div class="d-flex align-items-center gap-3">
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <span style="color:white; font-weight:500;">
+                        Hi, @User.Identity.Name 👤
+                    </span>
+
+                    <a href="/Auth/Logout" class="btn btn-outline-light btn-sm">
+                        Logout
+                    </a>
+                }
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="main-container">
+
+        <!-- menú lateral -->
+        <div id="sidebar" class="sidebar">
+            <h4>IBM</h4>
+
+            <!-- navegación principal del sistema -->
+            <ul>
+                <li><a asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+                <li><a asp-controller="Upload" asp-action="Index">Upload</a></li>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <li><a asp-controller="Users" asp-action="Index">Users</a></li>
+                }
+
+            </ul>
+        </div>
+
+        <!-- contenido dinámico de cada vista -->
+        <div id="content" class="content">
+            @RenderBody()
+        </div>
+
+    </div>
+
+    <!-- scripts -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>

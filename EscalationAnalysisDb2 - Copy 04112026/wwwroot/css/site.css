@@ -1,0 +1,301 @@
+/* ===================== */
+/* BASE */
+/* ===================== */
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    margin: 0;
+    background-color: #f3f4f6;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ===================== */
+/* HEADER (TOPBAR) */
+/* ===================== */
+
+.topbar {
+    height: 60px;
+    background-color: #4c1d95;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    color: white;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+/* ===================== */
+/* LAYOUT */
+/* ===================== */
+
+.main-container {
+    display: flex;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+    width: 220px;
+    background: white;
+    padding: 20px;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    height: calc(100vh - 60px);
+    transition: all 0.3s ease; /* ?? FIX */
+    overflow: hidden; /* ?? FIX */
+}
+
+    .sidebar h4 {
+        color: #4c1d95;
+        margin-bottom: 20px;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar li {
+        margin-bottom: 15px;
+    }
+
+    .sidebar a {
+        text-decoration: none;
+        color: #333;
+    }
+
+        .sidebar a:hover {
+            color: #4c1d95;
+        }
+
+/* CONTENIDO */
+
+.content {
+    margin-left: 220px;
+    margin-top: 60px;
+    padding: 20px;
+    width: 100%;
+    transition: all 0.3s ease; /* ?? FIX */
+}
+
+/* ===================== */
+/* CARDS */
+/* ===================== */
+
+.card {
+    border-radius: 12px;
+    border: none;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+    .card small {
+        color: #919191;
+    }
+
+    .card h2 {
+        font-weight: 600;
+    }
+
+    .card h6 {
+        margin-bottom: 10px;
+    }
+
+/* ===================== */
+/* BOTONES */
+/* ===================== */
+
+.btn-primary {
+    background-color: #4c1d95;
+    border: none;
+}
+
+    .btn-primary:hover {
+        background-color: #3b136f;
+    }
+
+.btn-outline-secondary {
+    border-radius: 8px;
+}
+
+/* ===================== */
+/* FORMULARIOS */
+/* ===================== */
+
+.form-control {
+    border-radius: 8px;
+}
+
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(76, 29, 149, 0.2);
+    }
+
+/* ===================== */
+/* FILTROS */
+/* ===================== */
+
+.card label {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* ===================== */
+/* RESPONSIVE */
+/* ===================== */
+
+@media (max-width: 768px) {
+
+    .sidebar {
+        display: none;
+    }
+
+    .content {
+        margin-left: 0;
+    }
+}
+
+/* ===================== */
+/* USERS VIEW (NUEVO) */
+/* ===================== */
+
+.table {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+    .table th {
+        font-weight: 600;
+        color: #4c1d95;
+        border-bottom: 2px solid #eee;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+.table-hover tbody tr:hover {
+    background-color: #f9f7ff;
+}
+
+.badge {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.btn-sm {
+    border-radius: 6px;
+}
+
+.btn-outline-primary {
+    color: #4c1d95;
+    border-color: #4c1d95;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #4c1d95;
+        color: white;
+    }
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+h2 {
+    font-weight: 600;
+}
+
+.card {
+    transition: all 0.2s ease;
+}
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+/* ===================== */
+/* LOGIN */
+/* ===================== */
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #4c1d95, #7c3aed);
+}
+
+.login-card {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+    .login-card h2 {
+        color: #4c1d95;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .login-card p {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .login-card .form-control {
+        border-radius: 10px;
+        height: 45px;
+    }
+
+    .login-card .btn-primary {
+        margin-top: 10px;
+        border-radius: 10px;
+        padding: 10px;
+        font-weight: 500;
+    }
+
+/* ===================== */
+/* TOGGLE SIDEBAR */
+/* ===================== */
+
+.sidebar.collapsed {
+    width: 0; /* oculta completamente */
+    padding: 0; /*elimina espacio interno */
+}
+
+.content.expanded {
+    margin-left: 0; /* ocupa todo el ancho */
+}
+
+html, body {
+    height: 100%;
+}
+
+.main-container {
+    min-height: calc(100vh - 60px); /* ?? altura completa menos topbar */
+}
+
+.content {
+    min-height: calc(100vh - 60px); /* ?? fuerza a llenar pantalla */
+    background-color: #f3f4f6; /* ?? tapa cualquier fondo raro */
+}

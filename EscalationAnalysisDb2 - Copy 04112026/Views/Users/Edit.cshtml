@@ -1,0 +1,36 @@
+﻿@model EscalationAnalysisDb2.Domain.Entities.AppUser
+
+<h2>Edit User</h2>
+
+<form asp-action="Edit" method="post">
+
+    <input type="hidden" asp-for="AppUserId" />
+
+    <div>
+        <label>Username</label>
+        <input asp-for="Username" />
+    </div>
+
+    <div>
+        <label>Password</label>
+        <input asp-for="Password" type="password" />
+    </div>
+
+    <div>
+        <label>Role</label>
+        <select asp-for="Role">
+            <option value="Admin">Admin</option>
+            <option value="User">User</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Active</label>
+        <input asp-for="IsActive" type="checkbox" />
+    </div>
+
+    <button type="submit">Update</button>
+
+</form>
+
+<a href="/Users">Back to list</a>

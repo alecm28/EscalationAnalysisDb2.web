@@ -1,0 +1,75 @@
+﻿@model List<EscalationAnalysisDb2.Domain.Entities.AppUser>
+
+<div class="container-fluid">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="color:#4c1d95;">Users</h2>
+            <small class="text-muted">Manage system users</small>
+        </div>
+
+        <a asp-action="Create" class="btn btn-primary">
+            + Create New User
+        </a>
+    </div>
+
+    <!-- CARD -->
+    <div class="card shadow-sm p-3">
+
+        <table class="table table-hover align-middle">
+
+            <thead style="background-color:#f3f0ff;">
+                <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>@user.Username</td>
+
+                        <td>
+                            <span class="badge bg-secondary">
+                                @user.Role
+                            </span>
+                        </td>
+
+                        <td>
+                            @if (user.IsActive)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Inactive</span>
+                            }
+                        </td>
+
+                        <td class="text-end">
+
+                            <a asp-action="Edit" asp-route-id="@user.AppUserId"
+                               class="btn btn-sm btn-outline-primary me-2">
+                                Edit
+                            </a>
+
+                            <a asp-action="Deactivate" asp-route-id="@user.AppUserId"
+                               class="btn btn-sm btn-outline-danger">
+                                Deactivate
+                            </a>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

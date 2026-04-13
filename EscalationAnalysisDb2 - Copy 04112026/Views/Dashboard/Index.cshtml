@@ -1,0 +1,210 @@
+﻿
+@model EscalationAnalysisDb2.Models.DashboardViewModel
+
+<div id="dashboardContent">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Escalations</h2>
+
+            <!--BOTÓN NUEVO -->
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Users" asp-action="Index" class="btn btn-secondary mt-2">
+                    Manage Users
+                </a>
+            }
+        </div>
+
+        <button class="btn btn-primary" onclick="exportDashboard()">
+            Export dashboard
+        </button>
+    </div>
+
+    <div class="row">
+
+        <!-- lado izquierdo donde va la información principal -->
+        <div class="col-md-9">
+
+            <!-- tarjetas con métricas principales -->
+            <div class="row mb-4">
+
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <small>Total escalations</small>
+                        <!-- total de escalaciones -->
+                        <h2 style="color:#bf0c0c;">@Model.TotalEscalations</h2>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <small>Total escalated cases</small>
+                        <!-- total de casos -->
+                        <h2 style="color:#f59e0b;">@Model.TotalCases</h2>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <small>Most escalated version</small>
+                        <!-- versión más impactada -->
+                        <h2>@Model.MostImpactedVersion</h2>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- gráfico de tendencias -->
+            <div class="card p-3 mb-4">
+                <h5>Escalation trends</h5>
+                <canvas id="trendChart"></canvas>
+            </div>
+
+            <!-- sección inferior con listas e insights -->
+            <div class="row">
+
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <h6>Top escalated customers</h6>
+                        <!-- lista de cuentas con más casos -->
+                        @foreach (var acc in Model.TopAccounts)
+                        {
+                            <div>@acc</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <h6>Top escalated owners</h6>
+                        <!-- lista de owners con más casos -->
+                        @foreach (var owner in Model.TopOwners)
+                        {
+                            <div>@owner</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <h6>Insights</h6>
+                        <!-- insights generados desde el backend -->
+                        <div>@Model.Insight1</div>
+                        <div>@Model.Insight2</div>
+                        <div>@Model.Insight3</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- lado derecho con filtros -->
+        <div class="col-md-3">
+
+            <div class="card p-3">
+
+                <h5>Filters</h5>
+
+                <label>Month</label>
+                <!-- filtro de mes -->
+                <select class="form-control mb-3">
+                    <option>@Model.SelectedMonth</option>
+                </select>
+
+                <label>Severity</label>
+                <!-- filtro por severidad -->
+                <div class="mb-3">
+                    <div><input type="checkbox" checked /> Critical</div>
+                    <div><input type="checkbox" checked /> High</div>
+                    <div><input type="checkbox" checked /> Moderate</div>
+                    <div><input type="checkbox" checked /> Low</div>
+                </div>
+
+                <label>Region</label>
+                <!-- filtro por región -->
+                <select class="form-control mb-3">
+                    <option>@Model.SelectedRegion</option>
+                </select>
+
+                <label>Product version</label>
+                <!-- filtro por versión -->
+                <select class="form-control mb-3">
+                    <option>@Model.SelectedVersion</option>
+                </select>
+
+                <!-- botones de acciones de filtros -->
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary w-50">Reset</button>
+                    <button class="btn btn-primary w-50">Apply</button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
+
+    <script>
+
+        // datos que vienen del backend para el gráfico
+        const trendLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendLabels ?? new List<string>()));
+        const trendValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendValues ?? new List<int>()));
+
+        // obtengo el canvas donde se va a dibujar el gráfico
+        const ctx = document.getElementById('trendChart').getContext('2d');
+
+        // configuración del gráfico de línea
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    data: trendValues,
+                    borderColor: '#4c1d95',
+                    backgroundColor: 'rgba(76,29,149,0.1)',
+                    fill: true,
+                    tension: 0.4,
+
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#4c1d95',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                elements: {
+                    line: {
+                        tension: 0.4
+                    }
+                }
+            }
+        });
+
+        // función para exportar el dashboard como imagen
+        function exportDashboard() {
+            const element = document.getElementById("dashboardContent");
+
+            html2canvas(element).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'dashboard.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+    </script>
+}
