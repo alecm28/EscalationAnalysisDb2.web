@@ -1,0 +1,59 @@
+﻿using EscalationAnalysisDb2.Domain.Entities;
+using EscalationAnalysisDb2.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace EscalationAnalysisDb2.Application.Services
+{
+    public class UserService
+    {
+        private readonly EscalationsDbContext _context;
+
+        public UserService(EscalationsDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<AppUser?> ValidateUser(string username, string password)
+        {
+            return await _context.AppUsers
+                .FirstOrDefaultAsync(u => u.Username == username
+                                       && u.Password == password
+                                       && u.IsActive);
+        }
+
+        public async Task<List<AppUser>> GetAllUsers()
+        {
+            return await _context.AppUsers.ToListAsync();
+        }
+
+        public async Task CreateUser(AppUser user)
+        {
+            _context.AppUsers.Add(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<AppUser?> GetUserById(int id)
+        {
+            return await _context.AppUsers.FindAsync(id);
+        }
+
+        public async Task UpdateUser(AppUser user)
+        {
+            _context.AppUsers.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeactivateUser(int id)
+        {
+            var user = await _context.AppUsers.FindAsync(id);
+
+            if (user != null)
+            {
+                user.IsActive = false;
+                await _context.SaveChangesAsync();
+            }
+        }
+    }
+}
+
+///nuevo

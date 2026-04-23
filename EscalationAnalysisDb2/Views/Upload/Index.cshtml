@@ -1,39 +1,311 @@
-﻿@{
+﻿@model List<EscalationAnalysisDb2.Application.ViewModels.UploadPreviewViewModel>
+
+@{
     ViewData["Title"] = "Upload";
 }
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-8">
 
-        <div class="card p-4">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 mb-4"
+                 role="alert"
+                 style="background:#fff3cd; color:#664d03; border-left:5px solid #ffc107;">
 
-            <h5 class="mb-2">Upload File</h5>
+                <strong>Notice:</strong> @TempData["ErrorMessage"]
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4"
+                 role="alert"
+                 style="border-left:5px solid #198754;">
+
+                <strong>Success:</strong> @TempData["SuccessMessage"]
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
+            </div>
+        }
+
+        <!-- preview -->
+        <div class="card p-4 shadow-sm mb-4">
+
+            <h5 class="mb-2">Preview Report</h5>
+
             <p class="text-muted mb-4">
-                Upload your escalation report (CSV or Excel)
+                Review the file before processing it.
             </p>
 
-            <!-- FIX: controller + enctype correcto -->
-            <form asp-controller="Upload" asp-action="UploadFile" method="post" enctype="multipart/form-data">
+            <form asp-controller="Upload"
+                  asp-action="PreviewFile"
+                  method="post"
+                  enctype="multipart/form-data"
+                  onsubmit="return validatePreviewFile()">
 
                 <div class="mb-3">
-                    <input type="file" name="file" class="form-control" />
+
+                    <label class="form-label fw-semibold">
+                        Select CSV File
+                    </label>
+
+                    <input type="file"
+                           id="filePreview"
+                           name="file"
+                           accept=".csv"
+                           hidden />
+
+                    <div class="d-flex gap-2">
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                onclick="document.getElementById('filePreview').click()">
+                            Choose File
+                        </button>
+
+                        <input type="text"
+                               id="filePreviewName"
+                               class="form-control"
+                               value="No file selected"
+                               readonly />
+
+                    </div>
+
+                    <small class="text-muted">
+                        Only CSV files are allowed.
+                    </small>
+
                 </div>
 
-                <!-- FIX: type submit -->
                 <button type="submit" class="btn btn-primary w-100">
-                    Upload
+                    Preview Report
                 </button>
 
             </form>
 
         </div>
 
-        <div class="mt-3">
-            <!-- FIX: ruta correcta -->
-            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary">
+        <!-- upload -->
+        <div class="card p-4 shadow-sm mb-4">
+
+            <h5 class="mb-2">Upload Report</h5>
+
+            <p class="text-muted mb-4">
+                Upload the file directly and continue to dashboard.
+            </p>
+
+            <form id="uploadForm"
+                  asp-controller="Upload"
+                  asp-action="UploadFile"
+                  method="post"
+                  enctype="multipart/form-data"
+                  onsubmit="return validateUploadFile()">
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-semibold">
+                        Select CSV File
+                    </label>
+
+                    <input type="file"
+                           id="fileUpload"
+                           name="file"
+                           accept=".csv"
+                           hidden />
+
+                    <div class="d-flex gap-2">
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                onclick="document.getElementById('fileUpload').click()">
+                            Choose File
+                        </button>
+
+                        <input type="text"
+                               id="fileUploadName"
+                               class="form-control"
+                               value="No file selected"
+                               readonly />
+
+                    </div>
+
+                    <small class="text-muted">
+                        Only CSV files are allowed.
+                    </small>
+
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">
+                    Upload Report
+                </button>
+
+            </form>
+
+        </div>
+
+        <div class="mb-4">
+            <a asp-controller="Dashboard"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
                 Back to Dashboard
             </a>
         </div>
 
+        <!-- preview results -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="card p-4 shadow-sm">
+
+                <h5 class="mb-3">Preview Results</h5>
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-sm">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Case</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Owner</th>
+                                <th>Account</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.CaseNumber</td>
+                                    <td>@item.Severity</td>
+                                    <td>@item.Status</td>
+                                    <td>@item.Owner</td>
+                                    <td>@item.Account</td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+        }
+
     </div>
 </div>
+
+<!-- modal -->
+<div class="modal fade"
+     id="loadingModal"
+     tabindex="-1"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4 text-center">
+
+            <div class="spinner-border text-primary mb-3"></div>
+
+            <h5>Processing Report...</h5>
+
+            <p class="text-muted">
+                Please wait while data is being uploaded.
+            </p>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const preview = document.getElementById("filePreview");
+            const previewName = document.getElementById("filePreviewName");
+
+            preview.addEventListener("change", function () {
+                previewName.value =
+                    preview.files.length > 0
+                    ? preview.files[0].name
+                    : "No file selected";
+            });
+
+            const upload = document.getElementById("fileUpload");
+            const uploadName = document.getElementById("fileUploadName");
+
+            upload.addEventListener("change", function () {
+                uploadName.value =
+                    upload.files.length > 0
+                    ? upload.files[0].name
+                    : "No file selected";
+            });
+
+        });
+
+        function showPageMessage(message) {
+
+            const existing = document.getElementById("inlineWarning");
+
+            if (existing)
+                existing.remove();
+
+            const box = document.createElement("div");
+
+            box.id = "inlineWarning";
+
+            box.className =
+                "alert alert-warning shadow-sm border-0 mb-4";
+
+            box.style.background = "#fff3cd";
+            box.style.color = "#664d03";
+            box.style.borderLeft = "5px solid #ffc107";
+
+            box.innerHTML =
+                "<strong>Notice:</strong> " + message;
+
+            const col = document.querySelector(".col-md-8");
+
+            col.prepend(box);
+        }
+
+        function validatePreviewFile() {
+
+            const file = document.getElementById("filePreview");
+
+            if (file.files.length === 0) {
+                showPageMessage("Please select a file.");
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateUploadFile() {
+
+            const file = document.getElementById("fileUpload");
+
+            if (file.files.length === 0) {
+                showPageMessage("Please select a file.");
+                return false;
+            }
+
+            var modal = new bootstrap.Modal(
+                document.getElementById("loadingModal")
+            );
+
+            modal.show();
+
+            return true;
+        }
+    </script>
+}

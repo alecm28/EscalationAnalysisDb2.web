@@ -1,87 +1,144 @@
 ﻿using EscalationAnalysisDb2.Application.Services;
 using EscalationAnalysisDb2.Application.ViewModels;
+using EscalationAnalysisDb2.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EscalationAnalysisDb2.Controllers
 {
     [Authorize]
     public class UploadController : Controller
     {
-        // servicio para guardar la información en la base de datos
         private readonly CaseService _caseService;
-
-        // servicio para procesar el archivo que se sube
         private readonly UploadService _uploadService;
+        private readonly EscalationsDbContext _context;
 
-        // constructor donde recibo ambos servicios
-        public UploadController(CaseService caseService, UploadService uploadService)
+        public UploadController(
+            CaseService caseService,
+            UploadService uploadService,
+            EscalationsDbContext context)
         {
             _caseService = caseService;
             _uploadService = uploadService;
+            _context = context;
         }
 
+        // vista principal
         public IActionResult Index()
         {
-            // retorna la vista donde se sube el archivo
-            return View();
+            return View(new List<UploadPreviewViewModel>());
         }
 
+        // preview del archivo
+        [HttpPost]
+        public IActionResult PreviewFile(IFormFile file)
+        {
+            // validar archivo seleccionado
+            if (file == null)
+            {
+                TempData["ErrorMessage"] = "Please select a file.";
+                return RedirectToAction("Index");
+            }
+
+            // validar vacío
+            if (file.Length == 0)
+            {
+                TempData["ErrorMessage"] = "The selected file is empty.";
+                return RedirectToAction("Index");
+            }
+
+            // validar formato csv
+            if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Only CSV files are allowed.";
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                var preview = _uploadService
+                    .ProcessFile(file)
+                    .Take(10)
+                    .ToList();
+
+                if (!preview.Any())
+                {
+                    TempData["ErrorMessage"] = "The file does not contain valid data rows.";
+                    return RedirectToAction("Index");
+                }
+
+                return View("Index", preview);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Index");
+            }
+        }
+
+        // subir archivo definitivo
         [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            // valido que el archivo exista y tenga contenido
-            if (file == null || file.Length == 0)
+            // validar archivo seleccionado
+            if (file == null)
             {
-                TempData["ErrorMessage"] = "Seleccione un archivo válido.";
+                TempData["ErrorMessage"] = "Please select a file.";
                 return RedirectToAction("Index");
             }
 
-            // valido que sea un archivo csv
+            // validar vacío
+            if (file.Length == 0)
+            {
+                TempData["ErrorMessage"] = "The selected file is empty.";
+                return RedirectToAction("Index");
+            }
+
+            // validar formato csv
             if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
             {
-                TempData["ErrorMessage"] = "El archivo debe estar en formato CSV (.csv).";
-                return RedirectToAction("Index");
-            }
-
-            List<UploadPreviewViewModel> preview;
-
-            try
-            {
-                // proceso el archivo para obtener los datos
-                preview = _uploadService.ProcessFile(file);
-            }
-            catch (Exception ex)
-            {
-                // si ocurre un error al leer el archivo lo muestro al usuario
-                TempData["ErrorMessage"] = $"Error procesando el archivo: {ex.Message}";
-                return RedirectToAction("Index");
-            }
-
-            // valido que el archivo tenga datos válidos
-            if (preview == null || !preview.Any())
-            {
-                TempData["ErrorMessage"] = "El archivo no contiene datos válidos o el formato no coincide.";
+                TempData["ErrorMessage"] = "Only CSV files are allowed.";
                 return RedirectToAction("Index");
             }
 
             try
             {
-                // guardo la información procesada en la base de datos
-                await _caseService.SaveData(preview, 1, file.FileName);
+                var preview = _uploadService.ProcessFile(file);
+
+                if (!preview.Any())
+                {
+                    TempData["ErrorMessage"] = "The file does not contain valid data rows.";
+                    return RedirectToAction("Index");
+                }
+
+                // obtener usuario logueado
+                var userEmail = User.Identity.Name;
+
+                var currentUser = await _context.AppUsers
+                    .FirstOrDefaultAsync(x => x.Email == userEmail);
+
+                if (currentUser == null)
+                {
+                    TempData["ErrorMessage"] = "User not found.";
+                    return RedirectToAction("Index");
+                }
+
+                // guardar información
+                await _caseService.SaveData(
+                    preview,
+                    currentUser.AppUserId,
+                    file.FileName);
+
+                TempData["SuccessMessage"] = "Report uploaded successfully.";
+
+                return RedirectToAction("Index", "Dashboard");
             }
             catch (Exception ex)
             {
-                // si falla el guardado, muestro el error
-                TempData["ErrorMessage"] = $"Error guardando la información: {ex.Message}";
+                TempData["ErrorMessage"] = ex.Message;
                 return RedirectToAction("Index");
             }
-
-            // mensaje de éxito cuando todo sale bien
-            TempData["SuccessMessage"] = "Archivo cargado correctamente";
-
-            // redirijo al dashboard
-            return RedirectToAction("Index", "Dashboard");
         }
     }
 }

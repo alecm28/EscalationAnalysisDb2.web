@@ -1,4 +1,5 @@
-﻿using EscalationAnalysisDb2.Application.ViewModels;
+﻿using Microsoft.VisualBasic.FileIO;
+using EscalationAnalysisDb2.Application.ViewModels;
 
 namespace EscalationAnalysisDb2.Application.Services
 {
@@ -6,30 +7,60 @@ namespace EscalationAnalysisDb2.Application.Services
     {
         public List<UploadPreviewViewModel> ProcessFile(IFormFile file)
         {
-            // lista donde voy a guardar los datos procesados del archivo
             var result = new List<UploadPreviewViewModel>();
 
-            // valido que el archivo exista y sea csv
-            if (file == null || !file.FileName.EndsWith(".csv"))
-                throw new Exception("El archivo debe estar en formato CSV (.csv)");
+            // validar archivo seleccionado
+            if (file == null)
+                throw new Exception("Please select a file.");
 
-            using var reader = new StreamReader(file.OpenReadStream());
+            // validar archivo vacío real
+            if (file.Length == 0)
+                throw new Exception("The selected file is empty.");
 
-            // leo la primera línea que corresponde a los encabezados
-            var headerLine = reader.ReadLine();
+            // validar formato permitido
+            if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Only CSV files are allowed.");
 
-            // valido que el archivo tenga encabezados
-            if (string.IsNullOrWhiteSpace(headerLine))
-                throw new Exception("El archivo no contiene encabezados");
+            using var stream = file.OpenReadStream();
+            using var parser = new TextFieldParser(stream);
 
-            var headers = headerLine.Split(',');
+            parser.TextFieldType = FieldType.Delimited;
+            parser.SetDelimiters(",");
+            parser.HasFieldsEnclosedInQuotes = true;
+            parser.TrimWhiteSpace = true;
 
-            // creo un diccionario para mapear el nombre de la columna con su posición
+            // buscar primera fila útil para headers
+            string[]? headers = null;
+
+            while (!parser.EndOfData)
+            {
+                var row = parser.ReadFields();
+
+                if (row != null &&
+                    row.Any(x => !string.IsNullOrWhiteSpace(x)))
+                {
+                    headers = row;
+                    break;
+                }
+            }
+
+            // si no encontró nada útil
+            if (headers == null)
+                throw new Exception("The selected file is empty.");
+
             var columnMap = headers
-                .Select((h, i) => new { Name = h.Trim(), Index = i })
-                .ToDictionary(x => x.Name, x => x.Index, StringComparer.OrdinalIgnoreCase);
+                .Select((h, i) => new
+                {
+                    Name = h.Trim(),
+                    Index = i
+                })
+                .Where(x => !string.IsNullOrWhiteSpace(x.Name))
+                .ToDictionary(
+                    x => x.Name,
+                    x => x.Index,
+                    StringComparer.OrdinalIgnoreCase);
 
-            // columnas obligatorias que el archivo debe tener
+            // columnas obligatorias del reporte
             var requiredColumns = new[]
             {
                 "CaseNumber",
@@ -40,36 +71,55 @@ namespace EscalationAnalysisDb2.Application.Services
                 "Account"
             };
 
-            // valido que todas las columnas requeridas existan
-            foreach (var col in requiredColumns)
-            {
-                if (!columnMap.ContainsKey(col))
-                    throw new Exception($"Falta la columna obligatoria: {col}");
-            }
+            var missingColumns = requiredColumns
+                .Where(x => !columnMap.ContainsKey(x))
+                .ToList();
 
-            // función para obtener valores de forma segura desde cada fila
-            string GetValue(string column, string[] values)
+            if (missingColumns.Any())
+                throw new Exception(
+                    "The uploaded file does not match the required report template.");
+
+            // obtener valor por nombre de columna
+            string? GetValue(string column, string[] values)
             {
                 if (!columnMap.ContainsKey(column))
                     return null;
 
                 var index = columnMap[column];
 
-                return values.Length > index ? values[index]?.Trim() : null;
+                if (index >= values.Length)
+                    return null;
+
+                return values[index]?.Trim();
             }
 
-            // empiezo a leer cada fila del archivo
-            while (!reader.EndOfStream)
+            int rowNumber = 1; // empieza en header
+            var invalidRows = new List<int>();
+
+            // leer filas del archivo
+            while (!parser.EndOfData)
             {
-                var line = reader.ReadLine();
+                rowNumber++;
 
-                // ignoro líneas vacías
-                if (string.IsNullOrWhiteSpace(line))
+                string[]? values;
+
+                try
+                {
+                    values = parser.ReadFields();
+                }
+                catch
+                {
+                    invalidRows.Add(rowNumber);
                     continue;
+                }
 
-                var values = line.Split(',');
+                // fila completamente vacía
+                if (values == null || values.All(x => string.IsNullOrWhiteSpace(x)))
+                {
+                    invalidRows.Add(rowNumber);
+                    continue;
+                }
 
-                // obtengo los valores de cada columna
                 var caseNumber = GetValue("CaseNumber", values);
                 var escalationTask = GetValue("EscalationTask", values);
                 var severityRaw = GetValue("Severity", values);
@@ -80,8 +130,20 @@ namespace EscalationAnalysisDb2.Application.Services
                 var version = GetValue("ProductVersion", values);
                 var dateRaw = GetValue("EscalationDate", values);
 
-                // limpio el formato de severidad (ej: "1 (Critical)" -> "Critical")
-                var severity = severityRaw?
+                // validar campos requeridos
+                if (string.IsNullOrWhiteSpace(caseNumber) ||
+                    string.IsNullOrWhiteSpace(escalationTask) ||
+                    string.IsNullOrWhiteSpace(severityRaw) ||
+                    string.IsNullOrWhiteSpace(status) ||
+                    string.IsNullOrWhiteSpace(owner) ||
+                    string.IsNullOrWhiteSpace(account))
+                {
+                    invalidRows.Add(rowNumber);
+                    continue;
+                }
+
+                // limpiar severidad
+                var severity = severityRaw
                     .Replace("1 (", "")
                     .Replace("2 (", "")
                     .Replace("3 (", "")
@@ -89,7 +151,6 @@ namespace EscalationAnalysisDb2.Application.Services
                     .Replace(")", "")
                     .Trim();
 
-                // intento convertir la fecha a formato DateTime
                 DateTime? escalationDate = null;
 
                 if (!string.IsNullOrWhiteSpace(dateRaw) &&
@@ -98,14 +159,6 @@ namespace EscalationAnalysisDb2.Application.Services
                     escalationDate = parsedDate;
                 }
 
-                // valido que la fila tenga los datos mínimos necesarios
-                if (string.IsNullOrWhiteSpace(caseNumber) ||
-                    string.IsNullOrWhiteSpace(escalationTask))
-                {
-                    continue;
-                }
-
-                // agrego el registro procesado a la lista
                 result.Add(new UploadPreviewViewModel
                 {
                     CaseNumber = caseNumber,
@@ -120,7 +173,19 @@ namespace EscalationAnalysisDb2.Application.Services
                 });
             }
 
-            // retorno la lista con los datos ya procesados
+            // si hubo filas inválidas, rechazar todo el archivo
+            if (invalidRows.Any())
+            {
+                throw new Exception(
+                    $"The file contains empty or incomplete rows. Please review row(s): {string.Join(", ", invalidRows)}.");
+            }
+
+            // si no quedó ninguna fila válida
+            if (!result.Any())
+            {
+                throw new Exception("No valid rows were found in the selected file.");
+            }
+
             return result;
         }
     }

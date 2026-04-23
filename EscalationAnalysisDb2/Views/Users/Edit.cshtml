@@ -1,36 +1,69 @@
 ﻿@model EscalationAnalysisDb2.Domain.Entities.AppUser
 
-<h2>Edit User</h2>
+<div class="container mt-4">
 
-<form asp-action="Edit" method="post">
+    <div class="card p-4 shadow-sm" style="max-width:500px; margin:auto; border-radius:12px;">
 
-    <input type="hidden" asp-for="AppUserId" />
+        <!-- TITULO -->
+        <h4 class="mb-3">Edit User</h4>
+        <p class="text-muted mb-4">Update user information</p>
 
-    <div>
-        <label>Username</label>
-        <input asp-for="Username" />
+        <form asp-action="Edit" method="post" autocomplete="off">
+
+            <!-- ID OCULTO -->
+            <input type="hidden" asp-for="AppUserId" />
+
+            <!-- VALIDACIONES -->
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <!-- EMAIL -->
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input asp-for="Email"
+                       class="form-control"
+                       required
+                       oninvalid="this.setCustomValidity('Please complete this field.')"
+                       oninput="this.setCustomValidity('')" />
+            </div>
+
+            <!-- NUEVO PASSWORD -->
+            <div class="mb-3">
+                <label class="form-label">New Password</label>
+                <input name="NewPassword"
+                       type="password"
+                       class="form-control" />
+            </div>
+
+            <!-- ROLE -->
+            <div class="mb-3">
+                <label class="form-label">Role</label>
+                <select asp-for="Role" class="form-control">
+                    <option value="Admin">Admin</option>
+                    <option value="User">User</option>
+                </select>
+            </div>
+
+            <!-- ACTIVE -->
+            <div class="form-check mb-4">
+                <input asp-for="IsActive" type="checkbox" class="form-check-input" />
+                <label class="form-check-label">Active</label>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="d-flex gap-2">
+
+                <button type="submit" class="btn btn-primary w-50">
+                    Update
+                </button>
+
+                <a asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary w-50">
+                    Back to list
+                </a>
+
+            </div>
+
+        </form>
+
     </div>
 
-    <div>
-        <label>Password</label>
-        <input asp-for="Password" type="password" />
-    </div>
-
-    <div>
-        <label>Role</label>
-        <select asp-for="Role">
-            <option value="Admin">Admin</option>
-            <option value="User">User</option>
-        </select>
-    </div>
-
-    <div>
-        <label>Active</label>
-        <input asp-for="IsActive" type="checkbox" />
-    </div>
-
-    <button type="submit">Update</button>
-
-</form>
-
-<a href="/Users">Back to list</a>
+</div>

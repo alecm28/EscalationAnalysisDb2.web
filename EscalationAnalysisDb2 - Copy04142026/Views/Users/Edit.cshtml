@@ -1,0 +1,90 @@
+﻿@model EscalationAnalysisDb2.Domain.Entities.AppUser
+
+<div class="container mt-4">
+
+    <div class="card p-4 shadow-sm" style="max-width:500px; margin:auto; border-radius:12px;">
+
+        <h4 class="mb-3">Edit User</h4>
+        <p class="text-muted mb-4">Update user information</p>
+
+        <form asp-action="Edit" method="post" autocomplete="off">
+
+            <!-- ID (NO TOCAR) -->
+            <input type="hidden" asp-for="AppUserId" />
+
+            <!-- USERNAME -->
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+
+                <!-- fake para evitar autofill -->
+                <input type="text" name="fakeUsername" style="display:none" />
+
+                <input asp-for="Username" class="form-control" autocomplete="new-password" />
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+
+                <!-- fake -->
+                <input type="password" name="fakePassword" style="display:none" />
+
+                <div class="input-group">
+                    <input asp-for="Password" type="password" class="form-control" id="passwordInput" autocomplete="new-password" />
+
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword(this)">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ROLE -->
+            <div class="mb-3">
+                <label class="form-label">Role</label>
+                <select asp-for="Role" class="form-control">
+                    <option value="Admin">Admin</option>
+                    <option value="User">User</option>
+                </select>
+            </div>
+
+            <!-- ACTIVE -->
+            <div class="form-check mb-4">
+                <input asp-for="IsActive" type="checkbox" class="form-check-input" />
+                <label class="form-check-label">Active</label>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-50">
+                    Update
+                </button>
+
+                <a asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary w-50">
+                    Back to list
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        function togglePassword(btn) {
+            const input = document.getElementById("passwordInput");
+            const icon = btn.querySelector("i");
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("bi-eye");
+                icon.classList.add("bi-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.remove("bi-eye-slash");
+                icon.classList.add("bi-eye");
+            }
+        }
+    </script>
+}

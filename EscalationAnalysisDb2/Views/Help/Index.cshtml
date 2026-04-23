@@ -1,0 +1,77 @@
+﻿@{
+    ViewData["Title"] = "Help";
+}
+
+<div class="card p-4 shadow-sm">
+
+    <h2 class="mb-4">Help</h2>
+
+    <p class="text-muted">
+        In this section you can find information about report format,
+        required columns and general system guidance.
+    </p>
+
+    <hr />
+
+    <h5 class="mt-4">Required Report Columns</h5>
+
+    <p>The uploaded CSV/Excel file should contain these columns:</p>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+
+            <thead class="table-light">
+                <tr>
+                    <th>CaseNumber</th>
+                    <th>EscalationTask</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Account</th>
+                    <th>Region</th>
+                    <th>ProductVersion</th>
+                    <th>EscalationDate</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>TS02134567</td>
+                    <td>ES001245</td>
+                    <td>1 (Critical)</td>
+                    <td>IBM is working</td>
+                    <td>John Smith</td>
+                    <td>Bank Corp</td>
+                    <td>Americas</td>
+                    <td>11.5</td>
+                    <td>04/16/2026</td>
+                </tr>
+            </tbody>
+
+        </table>
+    </div>
+
+    <hr />
+
+    <h5 class="mt-4">Upload Recommendations</h5>
+
+    <ul>
+        <li>Use CSV format whenever possible.</li>
+        <li>Do not rename required columns.</li>
+        <li>Avoid empty rows in the file.</li>
+        <li>Verify dates are valid.</li>
+        <li>Keep one header row only.</li>
+    </ul>
+
+    <hr />
+
+    <h5 class="mt-4">System Guidance</h5>
+
+    <ul>
+        <li>Use Dashboard to review metrics and charts.</li>
+        <li>Use Upload to process a new report.</li>
+        <li>Use Report History to review previous uploads.</li>
+        <li>Use filters in Dashboard for better analysis.</li>
+    </ul>
+
+</div>

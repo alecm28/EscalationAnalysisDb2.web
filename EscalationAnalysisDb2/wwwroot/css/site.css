@@ -12,6 +12,11 @@ html {
     }
 }
 
+html,
+body {
+    height: 100%;
+}
+
 body {
     margin: 0;
     background-color: #f3f4f6;
@@ -42,9 +47,12 @@ body {
 
 .main-container {
     display: flex;
+    min-height: calc(100vh - 60px);
 }
 
+/* ===================== */
 /* SIDEBAR */
+/* ===================== */
 
 .sidebar {
     width: 220px;
@@ -54,8 +62,8 @@ body {
     top: 60px;
     left: 0;
     height: calc(100vh - 60px);
-    transition: all 0.3s ease; /* ?? FIX */
-    overflow: hidden; /* ?? FIX */
+    transition: all 0.3s ease;
+    overflow: hidden;
 }
 
     .sidebar h4 {
@@ -81,14 +89,18 @@ body {
             color: #4c1d95;
         }
 
-/* CONTENIDO */
+/* ===================== */
+/* CONTENT */
+/* ===================== */
 
 .content {
     margin-left: 220px;
     margin-top: 60px;
     padding: 20px;
     width: 100%;
-    transition: all 0.3s ease; /* ?? FIX */
+    min-height: calc(100vh - 60px);
+    background-color: #f3f4f6;
+    transition: all 0.3s ease;
 }
 
 /* ===================== */
@@ -98,29 +110,41 @@ body {
 .card {
     border-radius: 12px;
     border: none;
-    background-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
 }
 
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
     .card small {
+        font-size: 12px;
         color: #919191;
+        font-weight: 500;
     }
 
     .card h2 {
+        margin: 4px 0 0 0;
         font-weight: 600;
     }
 
-    .card h6 {
-        margin-bottom: 10px;
+    .card h5 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 12px;
     }
 
 /* ===================== */
-/* BOTONES */
+/* BUTTONS */
 /* ===================== */
 
 .btn-primary {
     background-color: #4c1d95;
     border: none;
+    border-radius: 8px;
 }
 
     .btn-primary:hover {
@@ -131,50 +155,55 @@ body {
     border-radius: 8px;
 }
 
+.btn-outline-primary {
+    color: #4c1d95;
+    border-color: #4c1d95;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #4c1d95;
+        color: white;
+    }
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
 /* ===================== */
-/* FORMULARIOS */
+/* FORMS */
 /* ===================== */
 
 .form-control {
     border-radius: 8px;
+    border: 1px solid #d1d5db;
+    padding: 8px 12px;
 }
 
     .form-control:focus {
-        box-shadow: 0 0 0 0.2rem rgba(76, 29, 149, 0.2);
+        border-color: #4c1d95;
+        box-shadow: 0 0 0 0.2rem rgba(76, 29, 149, 0.15);
     }
 
-/* ===================== */
-/* FILTROS */
-/* ===================== */
-
-.card label {
-    font-size: 13px;
+.form-label {
     font-weight: 500;
-    margin-bottom: 5px;
-    display: block;
+    color: #374151;
+}
+
+.form-check-input {
+    cursor: pointer;
+}
+
+.form-check-label {
+    margin-left: 5px;
 }
 
 /* ===================== */
-/* RESPONSIVE */
-/* ===================== */
-
-@media (max-width: 768px) {
-
-    .sidebar {
-        display: none;
-    }
-
-    .content {
-        margin-left: 0;
-    }
-}
-
-/* ===================== */
-/* USERS VIEW (NUEVO) */
+/* TABLES */
 /* ===================== */
 
 .table {
-    background-color: white;
+    background: white;
     border-radius: 10px;
     overflow: hidden;
 }
@@ -199,37 +228,6 @@ body {
     font-size: 12px;
 }
 
-.btn-sm {
-    border-radius: 6px;
-}
-
-.btn-outline-primary {
-    color: #4c1d95;
-    border-color: #4c1d95;
-}
-
-    .btn-outline-primary:hover {
-        background-color: #4c1d95;
-        color: white;
-    }
-
-.btn-outline-danger:hover {
-    background-color: #dc3545;
-    color: white;
-}
-
-h2 {
-    font-weight: 600;
-}
-
-.card {
-    transition: all 0.2s ease;
-}
-
-    .card:hover {
-        transform: translateY(-2px);
-    }
-
 /* ===================== */
 /* LOGIN */
 /* ===================== */
@@ -248,7 +246,7 @@ h2 {
     border-radius: 16px;
     width: 100%;
     max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
     .login-card h2 {
@@ -275,27 +273,115 @@ h2 {
     }
 
 /* ===================== */
-/* TOGGLE SIDEBAR */
+/* SIDEBAR TOGGLE */
 /* ===================== */
 
 .sidebar.collapsed {
-    width: 0; /* oculta completamente */
-    padding: 0; /*elimina espacio interno */
+    width: 0;
+    padding: 0;
 }
 
 .content.expanded {
-    margin-left: 0; /* ocupa todo el ancho */
+    margin-left: 0;
 }
 
-html, body {
+/* ===================== */
+/* DASHBOARD BOTTOM */
+/* ===================== */
+
+.summary-card {
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+    .summary-card small {
+        font-size: 12px;
+        color: #919191;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 14px;
+    }
+
+/* ===================== */
+/* TOP BARS */
+/* ===================== */
+
+.progress-item {
+    margin-bottom: 16px;
+}
+
+    .progress-item span {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1f2937;
+    }
+
+    .progress-item strong {
+        font-size: 14px;
+        font-weight: 700;
+        color: #4c1d95;
+    }
+
+.progress-mini {
+    width: 100%;
+    height: 12px;
+    background: #ececec;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.progress-fill {
     height: 100%;
+    background: #4c1d95;
+    border-radius: 20px;
+    transition: width 0.4s ease;
 }
 
-.main-container {
-    min-height: calc(100vh - 60px); /* ?? altura completa menos topbar */
+.owner-bar {
+    background: #6d28d9;
 }
 
-.content {
-    min-height: calc(100vh - 60px); /* ?? fuerza a llenar pantalla */
-    background-color: #f3f4f6; /* ?? tapa cualquier fondo raro */
+/* ===================== */
+/* INSIGHTS */
+/* ===================== */
+
+.chip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 10px;
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+    .chip strong {
+        color: #4c1d95;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+/* ===================== */
+/* RESPONSIVE */
+/* ===================== */
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+
+    .content {
+        margin-left: 0;
+    }
+
+    .topbar {
+        padding: 0 12px;
+    }
+
+    .card {
+        margin-bottom: 15px;
+    }
 }

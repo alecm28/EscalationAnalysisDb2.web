@@ -1,0 +1,128 @@
+﻿@{
+    ViewData["Title"] = "System Overview";
+}
+
+<div class="container-fluid">
+
+    <h2 class="mb-4">System Overview</h2>
+
+    <!-- CARDS -->
+    <div class="row mb-4">
+
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm">
+                <small>Total Users</small>
+                <h3>@ViewBag.TotalUsers</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm">
+                <small>Active Users</small>
+                <h3>@ViewBag.ActiveUsers</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm">
+                <small>Total Reports</small>
+                <h3>@ViewBag.TotalReports</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm">
+                <small>Last Upload</small>
+                <h6>
+                    @(ViewBag.LastUpload == DateTime.MinValue
+                        ? "N/A"
+                        : ((DateTime)ViewBag.LastUpload).ToString("dd/MM/yyyy"))
+                </h6>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- REPORT FORMAT -->
+    <div class="card p-4 shadow-sm mb-4">
+
+        <h5>Report Upload Standards</h5>
+
+        <p class="text-muted">
+            Reports should be uploaded in CSV format and contain the expected columns.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>CaseNumber</th>
+                        <th>EscalationTask</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Owner</th>
+                        <th>Account</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>TS02134567</td>
+                        <td>ES00124</td>
+                        <td>1 (Critical)</td>
+                        <td>IBM is working</td>
+                        <td>John Smith</td>
+                        <td>Bank Corp</td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+    <!-- USER ADMIN RULES -->
+    <div class="card p-4 shadow-sm mb-4">
+
+        <h5>User Administration Rules</h5>
+
+        <ul>
+            <li>Users must be created with valid corporate email addresses.</li>
+            <li>Admin role has full visibility of reports and users.</li>
+            <li>User role can only access personal uploads.</li>
+            <li>Inactive users cannot log in.</li>
+            <li>Password reset should be managed through admin process.</li>
+        </ul>
+
+    </div>
+
+    <!-- SECURITY -->
+    <div class="card p-4 shadow-sm mb-4">
+
+        <h5>Security Notes</h5>
+
+        <ul>
+            <li>Always log out after use.</li>
+            <li>Only authorized users may upload reports.</li>
+            <li>Do not upload confidential data outside approved scope.</li>
+            <li>User access is role-based.</li>
+        </ul>
+
+    </div>
+
+    <!-- MAINTENANCE -->
+    <div class="card p-4 shadow-sm">
+
+        <h5>Operational Recommendations</h5>
+
+        <ul>
+            <li>Review report history periodically.</li>
+            <li>Keep active user list updated.</li>
+            <li>Validate CSV format before upload.</li>
+            <li>Use dashboard filters for monthly reviews.</li>
+        </ul>
+
+    </div>
+
+</div>

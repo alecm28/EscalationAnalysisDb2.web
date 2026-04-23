@@ -14,7 +14,11 @@ namespace EscalationAnalysisDb2.Application.Services
             _context = context;
         }
 
-        public async Task SaveData(List<UploadPreviewViewModel> data, int userId, string fileName)
+        // guardar información del archivo
+        public async Task SaveData(
+            List<UploadPreviewViewModel> data,
+            int userId,
+            string fileName)
         {
             var report = new Report
             {
@@ -26,94 +30,94 @@ namespace EscalationAnalysisDb2.Application.Services
             _context.Reports.Add(report);
             await _context.SaveChangesAsync();
 
-            var groupedCases = data.GroupBy(x => x.CaseNumber);
-
-            foreach (var group in groupedCases)
+            foreach (var item in data)
             {
-                var first = group.First();
-
-                var accountName = string.IsNullOrWhiteSpace(first.Account) ? "Unknown" : first.Account.Trim();
-
-                var account = await _context.Accounts
-                    .FirstOrDefaultAsync(a => a.AccountName.ToLower() == accountName.ToLower());
-
-                if (account == null)
+                if (string.IsNullOrWhiteSpace(item.CaseNumber) ||
+                    string.IsNullOrWhiteSpace(item.EscalationTask) ||
+                    string.IsNullOrWhiteSpace(item.Severity) ||
+                    string.IsNullOrWhiteSpace(item.Owner) ||
+                    string.IsNullOrWhiteSpace(item.Account) ||
+                    string.IsNullOrWhiteSpace(item.Status))
                 {
-                    account = new Account { AccountName = accountName };
-                    _context.Accounts.Add(account);
-                    await _context.SaveChangesAsync();
+                    continue;
                 }
 
-                var ownerName = string.IsNullOrWhiteSpace(first.Owner) ? "Unknown" : first.Owner.Trim();
+                var account = await GetOrCreateAccount(item.Account);
+                var owner = await GetOrCreateOwner(item.Owner, item.Region);
 
-                var owner = await _context.CaseOwners
-                    .FirstOrDefaultAsync(o => o.CaseOwnerName.ToLower() == ownerName.ToLower());
+                var severityId = MapSeverity(item.Severity);
+                var statusId = MapStatus(item.Status);
 
-                if (owner == null)
+                var caseRecord = new CaseRecord
                 {
-                    owner = new CaseOwner
-                    {
-                        CaseOwnerName = ownerName,
-                        Region = string.IsNullOrWhiteSpace(first.Region) ? "Unknown" : first.Region.Trim()
-                    };
+                    CaseNumber = item.CaseNumber.Trim(),
+                    AccountId = account.AccountId,
+                    CaseOwnerId = owner.CaseOwnerId,
+                    SeverityId = severityId,
+                    StatusId = statusId,
+                    ProductVersion = item.ProductVersion ?? "Unknown",
+                    ReportId = report.ReportId
+                };
 
-                    _context.CaseOwners.Add(owner);
-                    await _context.SaveChangesAsync();
-                }
+                _context.CaseRecords.Add(caseRecord);
+                await _context.SaveChangesAsync();
 
-                int severityId = MapSeverity(first.Severity);
-                int statusId = MapStatus(first.Status);
-
-                var existingCase = await _context.CaseRecords
-                    .FirstOrDefaultAsync(c => c.CaseNumber == first.CaseNumber);
-
-                if (existingCase == null)
+                var escalation = new Escalation
                 {
-                    existingCase = new CaseRecord
-                    {
-                        CaseNumber = first.CaseNumber,
-                        AccountId = account.AccountId,
-                        CaseOwnerId = owner.CaseOwnerId,
-                        ReportId = report.ReportId,
-                        SeverityId = severityId,
-                        StatusId = statusId,
-                        ProductVersion = string.IsNullOrWhiteSpace(first.ProductVersion)
-                            ? "Unknown"
-                            : first.ProductVersion.Trim()
-                    };
+                    CaseRecordId = caseRecord.CaseRecordId,
+                    EscalationTask = item.EscalationTask.Trim(),
+                    EscalationDate = item.EscalationDate ?? DateTime.Now,
+                    SeverityId = severityId,
+                    StatusId = statusId
+                };
 
-                    _context.CaseRecords.Add(existingCase);
-                    await _context.SaveChangesAsync();
-                }
-
-                foreach (var item in group)
-                {
-                    if (string.IsNullOrWhiteSpace(item.EscalationTask))
-                        continue;
-
-                    int escSeverityId = MapSeverity(item.Severity);
-                    int escStatusId = MapStatus(item.Status);
-
-                    var exists = await _context.Escalations
-                        .AnyAsync(e => e.EscalationTask == item.EscalationTask);
-
-                    if (!exists)
-                    {
-                        var escalation = new Escalation
-                        {
-                            CaseRecordId = existingCase.CaseRecordId,
-                            EscalationTask = item.EscalationTask.Trim(),
-                            EscalationDate = item.EscalationDate ?? DateTime.Now,
-                            SeverityId = escSeverityId,
-                            StatusId = escStatusId
-                        };
-
-                        _context.Escalations.Add(escalation);
-                    }
-                }
+                _context.Escalations.Add(escalation);
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        private async Task<Account> GetOrCreateAccount(string name)
+        {
+            name ??= "Unknown";
+
+            var account = await _context.Accounts
+                .FirstOrDefaultAsync(x => x.AccountName == name);
+
+            if (account == null)
+            {
+                account = new Account
+                {
+                    AccountName = name
+                };
+
+                _context.Accounts.Add(account);
+                await _context.SaveChangesAsync();
+            }
+
+            return account;
+        }
+
+        private async Task<CaseOwner> GetOrCreateOwner(string name, string region)
+        {
+            name ??= "Unknown";
+
+            var owner = await _context.CaseOwners
+                .FirstOrDefaultAsync(x => x.CaseOwnerName == name);
+
+            if (owner == null)
+            {
+                owner = new CaseOwner
+                {
+                    CaseOwnerName = name,
+                    Region = region ?? "Unknown"
+                };
+
+                _context.CaseOwners.Add(owner);
+                await _context.SaveChangesAsync();
+            }
+
+            return owner;
         }
 
         private int MapSeverity(string severity)
@@ -140,96 +144,128 @@ namespace EscalationAnalysisDb2.Application.Services
             };
         }
 
-        // 🔥 NUEVOS MÉTODOS (FIX DEL ERROR)
-
-        public async Task<List<object>> GetEscalationsBySeverity()
-        {
-            return await _context.Escalations
-                .Include(e => e.Severity)
-                .GroupBy(e => e.Severity.SeverityName)
-                .Select(g => new
-                {
-                    Severity = g.Key,
-                    Count = g.Count()
-                })
-                .ToListAsync<object>();
-        }
-
-        public async Task<List<object>> GetEscalationsByStatus()
-        {
-            return await _context.Escalations
-                .Include(e => e.Status)
-                .GroupBy(e => e.Status.StatusName)
-                .Select(g => new
-                {
-                    Status = g.Key,
-                    Count = g.Count()
-                })
-                .ToListAsync<object>();
-        }
-
-        // 🔥 FILTROS
-
-        public async Task<int> GetTotalCases(int? month, List<int> severity, string region, string version)
-        {
-            var query = _context.CaseRecords
-                .Include(c => c.CaseOwner)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(region))
-                query = query.Where(c => c.CaseOwner.Region == region);
-
-            if (!string.IsNullOrEmpty(version))
-                query = query.Where(c => c.ProductVersion == version);
-
-            return await query.CountAsync();
-        }
-
-        public async Task<int> GetTotalEscalations(int? month, List<int> severity, string region, string version)
+        private IQueryable<Escalation> ApplyFilters(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
         {
             var query = _context.Escalations
                 .Include(e => e.CaseRecord)
-                .ThenInclude(c => c.CaseOwner)
+                    .ThenInclude(c => c.CaseOwner)
+                .Include(e => e.CaseRecord)
+                    .ThenInclude(c => c.Account)
+                .Include(e => e.CaseRecord)
+                    .ThenInclude(c => c.Report)
                 .AsQueryable();
+
+            if (userId.HasValue)
+            {
+                query = query.Where(e =>
+                    e.CaseRecord.Report.UploadedByUserId == userId.Value);
+            }
 
             if (month.HasValue)
-                query = query.Where(e => e.EscalationDate.Month == month);
+            {
+                query = query.Where(e =>
+                    e.EscalationDate.Month == month.Value);
+            }
 
             if (severity != null && severity.Any())
-                query = query.Where(e => severity.Contains(e.SeverityId));
+            {
+                query = query.Where(e =>
+                    severity.Contains(e.SeverityId));
+            }
 
-            if (!string.IsNullOrEmpty(region))
-                query = query.Where(e => e.CaseRecord.CaseOwner.Region == region);
+            if (!string.IsNullOrWhiteSpace(region))
+            {
+                query = query.Where(e =>
+                    e.CaseRecord.CaseOwner.Region != null &&
+                    e.CaseRecord.CaseOwner.Region.ToLower() == region.ToLower());
+            }
 
-            if (!string.IsNullOrEmpty(version))
-                query = query.Where(e => e.CaseRecord.ProductVersion == version);
+            if (!string.IsNullOrWhiteSpace(version))
+            {
+                query = query.Where(e =>
+                    e.CaseRecord.ProductVersion != null &&
+                    e.CaseRecord.ProductVersion.ToLower() == version.ToLower());
+            }
 
-            return await query.CountAsync();
+            return query;
         }
 
-        public async Task<List<int>> GetTrendValues(int? month, List<int> severity, string region, string version)
+        public async Task<int> GetTotalEscalations(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
         {
-            var query = _context.Escalations
-                .Include(e => e.CaseRecord)
-                .ThenInclude(c => c.CaseOwner)
-                .AsQueryable();
+            return await ApplyFilters(month, severity, region, version, userId)
+                .CountAsync();
+        }
 
-            if (severity != null && severity.Any())
-                query = query.Where(e => severity.Contains(e.SeverityId));
+        public async Task<int> GetTotalCases(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
+        {
+            return await ApplyFilters(month, severity, region, version, userId)
+                .Select(e => e.CaseRecord.CaseNumber)
+                .Distinct()
+                .CountAsync();
+        }
 
-            if (!string.IsNullOrEmpty(region))
-                query = query.Where(e => e.CaseRecord.CaseOwner.Region == region);
+        public async Task<string> GetMostImpactedVersion(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
+        {
+            var result = await ApplyFilters(month, severity, region, version, userId)
+                .Where(e => e.CaseRecord.ProductVersion != null &&
+                            e.CaseRecord.ProductVersion != "")
+                .GroupBy(e => e.CaseRecord.ProductVersion)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefaultAsync();
 
-            if (!string.IsNullOrEmpty(version))
-                query = query.Where(e => e.CaseRecord.ProductVersion == version);
+            return string.IsNullOrWhiteSpace(result)
+                ? "No data"
+                : result;
+        }
 
-            var trends = await query
+        public async Task<List<int>> GetTrendValues(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
+        {
+            var query = ApplyFilters(month, severity, region, version, userId);
+
+            var grouped = await query
                 .GroupBy(e => e.EscalationDate.Month)
-                .OrderBy(g => g.Key)
-                .Select(g => g.Count())
+                .Select(g => new
+                {
+                    Month = g.Key,
+                    Count = g.Count()
+                })
                 .ToListAsync();
 
-            return trends;
+            var result = new List<int>();
+
+            for (int i = 1; i <= 12; i++)
+            {
+                var item = grouped.FirstOrDefault(x => x.Month == i);
+                result.Add(item?.Count ?? 0);
+            }
+
+            return result;
         }
 
         public List<string> GetTrendLabels()
@@ -241,61 +277,94 @@ namespace EscalationAnalysisDb2.Application.Services
             };
         }
 
-        public async Task<List<string>> GetTopAccounts(int? month, List<int> severity, string region, string version)
+        public async Task<List<string>> GetTopAccounts(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
         {
-            var query = _context.CaseRecords
-                .Include(c => c.Account)
-                .Include(c => c.CaseOwner)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(region))
-                query = query.Where(c => c.CaseOwner.Region == region);
-
-            if (!string.IsNullOrEmpty(version))
-                query = query.Where(c => c.ProductVersion == version);
-
-            return await query
-                .GroupBy(c => c.Account.AccountName)
+            return await ApplyFilters(month, severity, region, version, userId)
+                .GroupBy(e => e.CaseRecord.Account.AccountName)
                 .OrderByDescending(g => g.Count())
                 .Take(4)
                 .Select(g => g.Key)
                 .ToListAsync();
         }
 
-        public async Task<List<string>> GetTopOwners(int? month, List<int> severity, string region, string version)
+        public async Task<List<int>> GetTopAccountValues(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
         {
-            var query = _context.CaseRecords
-                .Include(c => c.CaseOwner)
-                .AsQueryable();
+            return await ApplyFilters(month, severity, region, version, userId)
+                .GroupBy(e => e.CaseRecord.Account.AccountName)
+                .OrderByDescending(g => g.Count())
+                .Take(4)
+                .Select(g => g.Count())
+                .ToListAsync();
+        }
 
-            if (!string.IsNullOrEmpty(region))
-                query = query.Where(c => c.CaseOwner.Region == region);
-
-            if (!string.IsNullOrEmpty(version))
-                query = query.Where(c => c.ProductVersion == version);
-
-            return await query
-                .GroupBy(c => c.CaseOwner.CaseOwnerName)
+        public async Task<List<string>> GetTopOwners(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
+        {
+            return await ApplyFilters(month, severity, region, version, userId)
+                .GroupBy(e => e.CaseRecord.CaseOwner.CaseOwnerName)
                 .OrderByDescending(g => g.Count())
                 .Take(4)
                 .Select(g => g.Key)
                 .ToListAsync();
         }
 
-        public async Task<string> GetMainInsight1()
+        public async Task<List<int>> GetTopOwnerValues(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
         {
-            var total = await _context.Escalations.CountAsync();
-            if (total == 0) return "No data available";
+            return await ApplyFilters(month, severity, region, version, userId)
+                .GroupBy(e => e.CaseRecord.CaseOwner.CaseOwnerName)
+                .OrderByDescending(g => g.Count())
+                .Take(4)
+                .Select(g => g.Count())
+                .ToListAsync();
+        }
 
-            var critical = await _context.Escalations.CountAsync(e => e.SeverityId == 1);
+        public async Task<string> GetMainInsight1(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
+        {
+            var total = await GetTotalEscalations(month, severity, region, version, userId);
+
+            if (total == 0)
+                return "No data available";
+
+            var critical = await ApplyFilters(month, severity, region, version, userId)
+                .CountAsync(e => e.SeverityId == 1);
+
             var percent = Math.Round((double)critical / total * 100, 0);
 
             return $"Critical cases represent {percent}%";
         }
 
-        public async Task<string> GetMainInsight2()
+        public async Task<string> GetMainInsight2(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
         {
-            var mostCommon = await _context.Escalations
+            var mostCommon = await ApplyFilters(month, severity, region, version, userId)
                 .GroupBy(e => e.SeverityId)
                 .OrderByDescending(g => g.Count())
                 .Select(g => g.Key)
@@ -304,14 +373,41 @@ namespace EscalationAnalysisDb2.Application.Services
             return $"Most common severity is {mostCommon}";
         }
 
-        public async Task<string> GetMainInsight3()
+        public async Task<string> GetMainInsight3(
+            int? month,
+            List<int> severity,
+            string region,
+            string version,
+            int? userId)
         {
-            var latestMonth = await _context.Escalations
-                .OrderByDescending(e => e.EscalationDate)
-                .Select(e => e.EscalationDate.Month)
-                .FirstOrDefaultAsync();
+            var data = await ApplyFilters(month, severity, region, version, userId)
+                .GroupBy(e => e.EscalationDate.Month)
+                .Select(g => new
+                {
+                    Month = g.Key,
+                    Count = g.Count()
+                })
+                .OrderBy(x => x.Month)
+                .ToListAsync();
 
-            return $"Latest activity month: {latestMonth}";
+            if (data.Count < 2)
+                return "Not enough trend data";
+
+            var last = data.Last();
+            var previous = data[data.Count - 2];
+
+            string monthName = System.Globalization.CultureInfo
+                .CurrentCulture
+                .DateTimeFormat
+                .GetAbbreviatedMonthName(previous.Month);
+
+            if (last.Count > previous.Count)
+                return $"Escalations increased after {monthName}";
+
+            if (last.Count < previous.Count)
+                return $"Escalations dropped after {monthName}";
+
+            return $"Escalations remained stable after {monthName}";
         }
     }
 }

@@ -1,0 +1,172 @@
+﻿@model EscalationAnalysisDb2.Models.DashboardViewModel
+
+<div id="dashboardContent">
+
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Escalations</h2>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Users" asp-action="Index" class="btn btn-secondary mt-2">
+                    Manage Users
+                </a>
+            }
+        </div>
+
+        <button class="btn btn-primary" onclick="exportDashboard()">
+            Export dashboard
+        </button>
+    </div>
+
+    <!-- Tarjetas principales -->
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+            <div class="card p-3">
+                <small>Total escalations</small>
+                <h2 style="color:#bf0c0c;">
+                    @(Model.TotalEscalations == 0 ? "No data" : Model.TotalEscalations.ToString())
+                </h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3">
+                <small>Total escalated cases</small>
+                <h2 style="color:#f59e0b;">
+                    @(Model.TotalCases == 0 ? "No data" : Model.TotalCases.ToString())
+                </h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3">
+                <small>Most escalated version</small>
+                <h2>@Model.MostImpactedVersion</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Gráfico de tendencias -->
+    <div class="card p-3 mb-4">
+        <h5>Escalation trends</h5>
+
+        @if (Model.TrendValues == null || !Model.TrendValues.Any() || Model.TrendValues.All(v => v == 0))
+        {
+            <div class="text-center text-muted mt-3">
+                No data available for selected filters
+            </div>
+        }
+        else
+        {
+            <canvas id="trendChart"></canvas>
+        }
+    </div>
+
+    <div class="row">
+
+        <!-- Top cuentas -->
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h6>Top escalated customers</h6>
+
+                @if (Model.TopAccounts == null || !Model.TopAccounts.Any())
+                {
+                    <div class="text-muted">No data</div>
+                }
+                else
+                {
+                    foreach (var acc in Model.TopAccounts)
+                    {
+                        <div>@acc</div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Top owners -->
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h6>Top escalated owners</h6>
+
+                @if (Model.TopOwners == null || !Model.TopOwners.Any())
+                {
+                    <div class="text-muted">No data</div>
+                }
+                else
+                {
+                    foreach (var owner in Model.TopOwners)
+                    {
+                        <div>@owner</div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Insights -->
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h6>Insights</h6>
+
+                @if (string.IsNullOrEmpty(Model.Insight1) &&
+                string.IsNullOrEmpty(Model.Insight2) &&
+                string.IsNullOrEmpty(Model.Insight3))
+                {
+                    <div class="text-muted">No data</div>
+                }
+                else
+                {
+                    <div>@Model.Insight1</div>
+                    <div>@Model.Insight2</div>
+                    <div>@Model.Insight3</div>
+                }
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendLabels ?? new List<string>()));
+    const values = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendValues ?? new List<int>()));
+
+    const ctx = document.getElementById('trendChart');
+
+    if (ctx && values.some(v => v > 0)) {
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    borderColor: '#4c1d95',
+                    backgroundColor: 'rgba(76,29,149,0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    function exportDashboard() {
+        const element = document.getElementById("dashboardContent");
+
+        html2canvas(element).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'dashboard.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+</script>

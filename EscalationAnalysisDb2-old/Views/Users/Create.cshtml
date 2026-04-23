@@ -1,0 +1,61 @@
+﻿@model EscalationAnalysisDb2.Domain.Entities.AppUser
+
+<div class="container mt-4">
+
+    <div class="card p-4 shadow-sm" style="max-width:500px; margin:auto; border-radius:12px;">
+
+        <h4 class="mb-3">Create User</h4>
+        <p class="text-muted mb-4">Add a new system user</p>
+
+        <form asp-action="Create" method="post" autocomplete="off">
+
+            <!-- VALIDATION -->
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <!-- CAMPOS FALSOS PARA EVITAR AUTOFILL -->
+            <input type="text" name="fakeUsername" style="display:none" autocomplete="username" />
+            <input type="password" name="fakePassword" style="display:none" autocomplete="new-password" />
+
+            <!-- EMAIL -->
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" autocomplete="off" required />
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input asp-for="Password" type="password" class="form-control" autocomplete="new-password" required />
+            </div>
+
+            <!-- ROLE -->
+            <div class="mb-3">
+                <label class="form-label">Role</label>
+                <select asp-for="Role" class="form-control">
+                    <option value="Admin">Admin</option>
+                    <option value="User">User</option>
+                </select>
+            </div>
+
+            <!-- ACTIVE -->
+            <div class="form-check mb-4">
+                <input asp-for="IsActive" type="checkbox" class="form-check-input" />
+                <label class="form-check-label">Active</label>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-50">
+                    Save
+                </button>
+
+                <a asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary w-50">
+                    Back to list
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

@@ -2,6 +2,23 @@
 
 <div class="container-fluid">
 
+    <!-- ALERTAS -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -22,6 +39,7 @@
             <thead style="background-color:#f3f0ff;">
                 <tr>
                     <th>Username</th>
+                    <th>Email</th>
                     <th>Role</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
@@ -32,14 +50,20 @@
                 @foreach (var user in Model)
                 {
                     <tr>
+                        <!-- USERNAME -->
                         <td>@user.Username</td>
 
+                        <!-- EMAIL -->
+                        <td>@user.Email</td>
+
+                        <!-- ROLE -->
                         <td>
                             <span class="badge bg-secondary">
                                 @user.Role
                             </span>
                         </td>
 
+                        <!-- STATUS -->
                         <td>
                             @if (user.IsActive)
                             {
@@ -51,17 +75,30 @@
                             }
                         </td>
 
+                        <!-- ACTIONS -->
                         <td class="text-end">
 
-                            <a asp-action="Edit" asp-route-id="@user.AppUserId"
+                            <a asp-action="Edit"
+                               asp-route-id="@user.AppUserId"
                                class="btn btn-sm btn-outline-primary me-2">
                                 Edit
                             </a>
 
-                            <a asp-action="Deactivate" asp-route-id="@user.AppUserId"
-                               class="btn btn-sm btn-outline-danger">
-                                Deactivate
-                            </a>
+                            @if (user.IsActive)
+                            {
+                                <a asp-action="Deactivate"
+                                   asp-route-id="@user.AppUserId"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to deactivate this user?');">
+                                    Deactivate
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                    Inactive
+                                </button>
+                            }
 
                         </td>
                     </tr>

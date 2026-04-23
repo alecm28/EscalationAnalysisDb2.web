@@ -1,0 +1,216 @@
+﻿@model EscalationAnalysisDb2.Models.DashboardViewModel
+
+<div id="dashboardContent">
+
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Escalations</h2>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Users" asp-action="Index" class="btn btn-secondary mt-2">
+                    Manage Users
+                </a>
+            }
+        </div>
+
+        <button class="btn btn-primary" onclick="exportDashboard()">
+            Export dashboard
+        </button>
+    </div>
+
+    <!-- Tarjetas superiores -->
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+            <div class="card p-3">
+                <small>Total escalations</small>
+                <h2 style="color:#bf0c0c;">
+                    @(Model.TotalEscalations == 0 ? "No data" : Model.TotalEscalations.ToString())
+                </h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3">
+                <small>Total escalated cases</small>
+                <h2 style="color:#f59e0b;">
+                    @(Model.TotalCases == 0 ? "No data" : Model.TotalCases.ToString())
+                </h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3">
+                <small>Most escalated version</small>
+                <h2>@Model.MostImpactedVersion</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Trend -->
+    <div class="card p-3 mb-4">
+        <h5>Escalation trends</h5>
+
+        @if (Model.TrendValues == null || !Model.TrendValues.Any() || Model.TrendValues.All(v => v == 0))
+        {
+            <div class="text-center text-muted mt-3">
+                No data available for selected filters
+            </div>
+        }
+        else
+        {
+            <canvas id="trendChart"></canvas>
+        }
+    </div>
+
+    <!-- Inferior -->
+    <div class="row g-3">
+
+        <!-- TOP CUSTOMERS -->
+        <div class="col-md-4">
+            <div class="card p-3 summary-card">
+                <small>Top escalated customers</small>
+
+                @if (Model.TopAccounts == null || !Model.TopAccounts.Any())
+                {
+                    <div class="text-muted mt-2">No data</div>
+                }
+                else
+                {
+                    var max = Model.TopAccountValues.Any() ? Model.TopAccountValues.Max() : 1;
+
+                    for (int i = 0; i < Model.TopAccounts.Count; i++)
+                    {
+                        var value = Model.TopAccountValues[i];
+                        var width = (value * 100) / max;
+
+                        <div class="progress-item">
+
+                            <div class="d-flex justify-content-between">
+                                <span>@Model.TopAccounts[i]</span>
+                                <strong>@value</strong>
+                            </div>
+
+                            <div class="progress-mini">
+                                <div class="progress-fill" style="width:@width%"></div>
+                            </div>
+
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- TOP OWNERS -->
+        <div class="col-md-4">
+            <div class="card p-3 summary-card">
+                <small>Top escalated owners</small>
+
+                @if (Model.TopOwners == null || !Model.TopOwners.Any())
+                {
+                    <div class="text-muted mt-2">No data</div>
+                }
+                else
+                {
+                    var max = Model.TopOwnerValues.Any() ? Model.TopOwnerValues.Max() : 1;
+
+                    for (int i = 0; i < Model.TopOwners.Count; i++)
+                    {
+                        var value = Model.TopOwnerValues[i];
+                        var width = (value * 100) / max;
+
+                        <div class="progress-item">
+
+                            <div class="d-flex justify-content-between">
+                                <span>@Model.TopOwners[i]</span>
+                                <strong>@value</strong>
+                            </div>
+
+                            <div class="progress-mini">
+                                <div class="progress-fill owner-bar" style="width:@width%"></div>
+                            </div>
+
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- INSIGHTS -->
+        <div class="col-md-4">
+            <div class="card p-3 summary-card">
+                <small>Insights</small>
+
+                @if (string.IsNullOrEmpty(Model.Insight1) &&
+                string.IsNullOrEmpty(Model.Insight2) &&
+                string.IsNullOrEmpty(Model.Insight3))
+                {
+                    <div class="text-muted mt-2">No data</div>
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(Model.Insight1))
+                    {
+                        <div class="chip">@Model.Insight1</div>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.Insight2))
+                    {
+                        <div class="chip">@Model.Insight2</div>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.Insight3))
+                    {
+                        <div class="chip">@Model.Insight3</div>
+                    }
+                }
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendLabels ?? new List<string>()));
+    const values = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendValues ?? new List<int>()));
+
+    const ctx = document.getElementById('trendChart');
+
+    if (ctx && values.some(v => v > 0)) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    borderColor: '#4c1d95',
+                    backgroundColor: 'rgba(76,29,149,0.10)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    function exportDashboard() {
+        const element = document.getElementById("dashboardContent");
+
+        html2canvas(element).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'dashboard.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+</script>
