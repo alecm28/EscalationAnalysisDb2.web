@@ -1,18 +1,24 @@
 ﻿@model EscalationAnalysisDb2.Application.ViewModels.LoginViewModel
 
 @{
+    // no usa layout general
+
     Layout = null;
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- configuracion basica -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
 
+    <!-- estilos -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- iconos -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
 <body>
@@ -23,11 +29,13 @@
             <h2>Welcome Back</h2>
             <p class="text-muted">Sign in to your account</p>
 
+            <!-- formulario login -->
             <form asp-action="Login" method="post">
 
+                <!-- errores -->
                 <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-                <!-- email -->
+                <!-- correo -->
                 <div class="mb-3">
                     <label class="form-label">User Email</label>
                     <input asp-for="Email" class="form-control" />
@@ -45,6 +53,7 @@
                                class="form-control"
                                id="loginPassword" />
 
+                        <!-- mostrar u ocultar password -->
                         <button type="button"
                                 class="btn btn-outline-secondary"
                                 onclick="toggleLoginPassword(this)">
@@ -59,6 +68,7 @@
                     Login
                 </button>
 
+                <!-- link recuperar password -->
                 <div class="text-center mt-3">
                     <a asp-action="ForgotPassword"
                        asp-controller="Auth"
@@ -72,11 +82,13 @@
         </div>
     </div>
 
+    <!-- scripts de validacion -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
     <script>
+        // cambia entre ver y ocultar password
         function toggleLoginPassword(btn) {
 
             const input = document.getElementById("loginPassword");

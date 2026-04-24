@@ -3,8 +3,7 @@ using EscalationAnalysisDb2.Domain.Entities;
 
 namespace EscalationAnalysisDb2.Infrastructure.Data
 {
-    // este contexto representa la conexión con la base de datos
-    // aquí defino las tablas y cómo se relacionan entre sí
+    // contexto principal de entity framework
     public class EscalationsDbContext : DbContext
     {
         public EscalationsDbContext(DbContextOptions<EscalationsDbContext> options)
@@ -12,7 +11,7 @@ namespace EscalationAnalysisDb2.Infrastructure.Data
         {
         }
 
-        // tablas principales del sistema
+        // tablas del sistema
         public DbSet<Account> Accounts { get; set; }
         public DbSet<CaseOwner> CaseOwners { get; set; }
         public DbSet<Severity> Severities { get; set; }
@@ -24,76 +23,70 @@ namespace EscalationAnalysisDb2.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // aseguro que el username sea único
+            // username unico
             modelBuilder.Entity<AppUser>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
 
-            // un usuario puede subir varios reportes
+            // usuario puede subir muchos reportes
             modelBuilder.Entity<Report>()
                 .HasOne(r => r.UploadedByUser)
                 .WithMany(u => u.UploadedReports)
                 .HasForeignKey(r => r.UploadedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // cada caso pertenece a una cuenta
+            // relaciones de caso
             modelBuilder.Entity<CaseRecord>()
                 .HasOne(cr => cr.Account)
                 .WithMany(a => a.CaseRecords)
                 .HasForeignKey(cr => cr.AccountId);
 
-            // cada caso tiene un owner asignado
             modelBuilder.Entity<CaseRecord>()
                 .HasOne(cr => cr.CaseOwner)
                 .WithMany(co => co.CaseRecords)
                 .HasForeignKey(cr => cr.CaseOwnerId);
 
-            // cada caso tiene una severidad base
             modelBuilder.Entity<CaseRecord>()
                 .HasOne(cr => cr.Severity)
                 .WithMany(s => s.CaseRecords)
                 .HasForeignKey(cr => cr.SeverityId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // cada caso tiene un estado base
             modelBuilder.Entity<CaseRecord>()
                 .HasOne(cr => cr.Status)
                 .WithMany(st => st.CaseRecords)
                 .HasForeignKey(cr => cr.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // cada caso viene de un reporte
             modelBuilder.Entity<CaseRecord>()
                 .HasOne(cr => cr.Report)
                 .WithMany(r => r.CaseRecords)
                 .HasForeignKey(cr => cr.ReportId);
 
-            // índice para buscar casos más rápido por número
+            // indice para busquedas por numero de caso
             modelBuilder.Entity<CaseRecord>()
                 .HasIndex(cr => cr.CaseNumber);
 
-            // un caso puede tener varias escalaciones
+            // relaciones de escalacion
             modelBuilder.Entity<Escalation>()
                 .HasOne(e => e.CaseRecord)
                 .WithMany(cr => cr.Escalations)
                 .HasForeignKey(e => e.CaseRecordId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // cada escalación tiene su propia severidad
             modelBuilder.Entity<Escalation>()
                 .HasOne(e => e.Severity)
                 .WithMany()
                 .HasForeignKey(e => e.SeverityId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // cada escalación tiene su propio estado
             modelBuilder.Entity<Escalation>()
                 .HasOne(e => e.Status)
                 .WithMany()
                 .HasForeignKey(e => e.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // índice para buscar escalaciones más rápido
+            // indice para escalacion
             modelBuilder.Entity<Escalation>()
                 .HasIndex(e => e.EscalationTask);
 

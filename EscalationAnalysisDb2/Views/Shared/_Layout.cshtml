@@ -1,25 +1,29 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- configuracion base -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>@ViewData["Title"] - EscalationAnalysisDb2</title>
 
+    <!-- estilos -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
+    <!-- librerias -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
 </head>
 
 <body>
 
+    <!-- barra superior -->
     <div class="topbar">
         <div class="d-flex align-items-center w-100 justify-content-between">
 
-            <!-- izquierda -->
+            <!-- lado izquierdo -->
             <div class="d-flex align-items-center gap-3">
                 <span onclick="toggleSidebar()" style="font-size:20px; cursor:pointer;">☰</span>
 
@@ -28,7 +32,7 @@
                 </span>
             </div>
 
-            <!-- derecha -->
+            <!-- lado derecho -->
             <div class="d-flex align-items-center gap-3">
 
                 @if (User.Identity.IsAuthenticated)
@@ -49,7 +53,7 @@
 
     <div class="main-container">
 
-        <!-- sidebar -->
+        <!-- menu lateral -->
         <div id="sidebar" class="sidebar">
 
             <ul>
@@ -74,6 +78,7 @@
 
                 @if (User.IsInRole("Admin"))
                 {
+                    <!-- opciones admin -->
                     <li>
                         <a asp-controller="Users" asp-action="Index">
                             Users
@@ -88,6 +93,7 @@
                 }
                 else
                 {
+                    <!-- opcion usuario normal -->
                     <li>
                         <a asp-controller="Help" asp-action="Index">
                             Help
@@ -99,13 +105,14 @@
 
         </div>
 
-        <!-- contenido -->
+        <!-- contenido principal -->
         <div id="content" class="content">
             @RenderBody()
         </div>
 
     </div>
 
+    <!-- scripts -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js"></script>
 

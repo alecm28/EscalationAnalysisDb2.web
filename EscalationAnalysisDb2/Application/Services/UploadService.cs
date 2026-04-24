@@ -5,33 +5,35 @@ namespace EscalationAnalysisDb2.Application.Services
 {
     public class UploadService
     {
+        // procesa archivo y devuelve preview
         public List<UploadPreviewViewModel> ProcessFile(IFormFile file)
         {
             var result = new List<UploadPreviewViewModel>();
 
-            // validar archivo seleccionado
+            // valida que exista archivo
             if (file == null)
                 throw new Exception("Please select a file.");
 
-            // validar archivo vacío real
+            // valida que no venga vacio
             if (file.Length == 0)
                 throw new Exception("The selected file is empty.");
 
-            // validar formato permitido
+            // solo acepta csv
             if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 throw new Exception("Only CSV files are allowed.");
 
             using var stream = file.OpenReadStream();
             using var parser = new TextFieldParser(stream);
 
+            // configuracion del lector csv
             parser.TextFieldType = FieldType.Delimited;
             parser.SetDelimiters(",");
             parser.HasFieldsEnclosedInQuotes = true;
             parser.TrimWhiteSpace = true;
 
-            // buscar primera fila útil para headers
             string[]? headers = null;
 
+            // busca primera fila con datos para headers
             while (!parser.EndOfData)
             {
                 var row = parser.ReadFields();
@@ -44,10 +46,10 @@ namespace EscalationAnalysisDb2.Application.Services
                 }
             }
 
-            // si no encontró nada útil
             if (headers == null)
                 throw new Exception("The selected file is empty.");
 
+            // relaciona nombre de columna con posicion
             var columnMap = headers
                 .Select((h, i) => new
                 {
@@ -60,7 +62,7 @@ namespace EscalationAnalysisDb2.Application.Services
                     x => x.Index,
                     StringComparer.OrdinalIgnoreCase);
 
-            // columnas obligatorias del reporte
+            // columnas requeridas
             var requiredColumns = new[]
             {
                 "CaseNumber",
@@ -79,7 +81,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 throw new Exception(
                     "The uploaded file does not match the required report template.");
 
-            // obtener valor por nombre de columna
+            // obtiene valor segun nombre de columna
             string? GetValue(string column, string[] values)
             {
                 if (!columnMap.ContainsKey(column))
@@ -93,10 +95,10 @@ namespace EscalationAnalysisDb2.Application.Services
                 return values[index]?.Trim();
             }
 
-            int rowNumber = 1; // empieza en header
+            int rowNumber = 1;
             var invalidRows = new List<int>();
 
-            // leer filas del archivo
+            // lee filas restantes
             while (!parser.EndOfData)
             {
                 rowNumber++;
@@ -113,7 +115,7 @@ namespace EscalationAnalysisDb2.Application.Services
                     continue;
                 }
 
-                // fila completamente vacía
+                // fila vacia
                 if (values == null || values.All(x => string.IsNullOrWhiteSpace(x)))
                 {
                     invalidRows.Add(rowNumber);
@@ -130,7 +132,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 var version = GetValue("ProductVersion", values);
                 var dateRaw = GetValue("EscalationDate", values);
 
-                // validar campos requeridos
+                // valida campos obligatorios
                 if (string.IsNullOrWhiteSpace(caseNumber) ||
                     string.IsNullOrWhiteSpace(escalationTask) ||
                     string.IsNullOrWhiteSpace(severityRaw) ||
@@ -142,7 +144,7 @@ namespace EscalationAnalysisDb2.Application.Services
                     continue;
                 }
 
-                // limpiar severidad
+                // limpia formato de severidad
                 var severity = severityRaw
                     .Replace("1 (", "")
                     .Replace("2 (", "")
@@ -153,12 +155,14 @@ namespace EscalationAnalysisDb2.Application.Services
 
                 DateTime? escalationDate = null;
 
+                // intenta convertir fecha
                 if (!string.IsNullOrWhiteSpace(dateRaw) &&
                     DateTime.TryParse(dateRaw, out var parsedDate))
                 {
                     escalationDate = parsedDate;
                 }
 
+                // agrega fila valida al preview
                 result.Add(new UploadPreviewViewModel
                 {
                     CaseNumber = caseNumber,
@@ -173,14 +177,14 @@ namespace EscalationAnalysisDb2.Application.Services
                 });
             }
 
-            // si hubo filas inválidas, rechazar todo el archivo
+            // si hubo errores rechaza archivo
             if (invalidRows.Any())
             {
                 throw new Exception(
                     $"The file contains empty or incomplete rows. Please review row(s): {string.Join(", ", invalidRows)}.");
             }
 
-            // si no quedó ninguna fila válida
+            // si no quedo nada valido
             if (!result.Any())
             {
                 throw new Exception("No valid rows were found in the selected file.");

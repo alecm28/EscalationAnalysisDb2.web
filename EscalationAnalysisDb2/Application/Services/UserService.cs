@@ -7,7 +7,10 @@ namespace EscalationAnalysisDb2.Application.Services
 {
     public class UserService
     {
+        // acceso a bd
         private readonly EscalationsDbContext _context;
+
+        // se usa para encriptar y validar passwords
         private readonly PasswordHasher<AppUser> _passwordHasher;
 
         public UserService(EscalationsDbContext context)
@@ -16,24 +19,24 @@ namespace EscalationAnalysisDb2.Application.Services
             _passwordHasher = new PasswordHasher<AppUser>();
         }
 
-        // LOGIN usando correo electrónico
+        // valida login del usuario
         public async Task<AppUser?> ValidateUser(string email, string password)
         {
-            // TRIM + LOWERCASE
+            // limpia formato del correo
             email = email?.Trim().ToLower();
 
             var user = await _context.AppUsers
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
-            // usuario no existe
+            // no existe
             if (user == null)
                 return null;
 
-            // usuario inactivo
+            // usuario desactivado
             if (!user.IsActive)
                 return null;
 
-            // LOCKOUT ACTIVO
+            // bloqueado temporalmente
             if (user.LockoutEnd != null &&
                 user.LockoutEnd > DateTime.UtcNow)
             {
@@ -42,12 +45,13 @@ namespace EscalationAnalysisDb2.Application.Services
 
             try
             {
+                // compara password encriptado
                 var result = _passwordHasher
                     .VerifyHashedPassword(user, user.Password, password);
 
                 if (result == PasswordVerificationResult.Success)
                 {
-                    // reset intentos fallidos
+                    // limpia intentos fallidos
                     user.FailedLoginAttempts = 0;
                     user.LockoutEnd = null;
 
@@ -58,9 +62,10 @@ namespace EscalationAnalysisDb2.Application.Services
             }
             catch
             {
-                // soporte usuarios viejos password texto plano
+                // soporte para passwords viejos en texto plano
                 if (user.Password == password)
                 {
+                    // lo convierte a hash
                     user.Password =
                         _passwordHasher.HashPassword(user, password);
 
@@ -73,10 +78,10 @@ namespace EscalationAnalysisDb2.Application.Services
                 }
             }
 
-            // password incorrecta = sumar intento
+            // suma intento fallido
             user.FailedLoginAttempts++;
 
-            // 5 intentos = bloqueo 15 min
+            // despues de 5 intentos bloquea 15 min
             if (user.FailedLoginAttempts >= 5)
             {
                 user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
@@ -88,7 +93,7 @@ namespace EscalationAnalysisDb2.Application.Services
             return null;
         }
 
-        // generar token recuperación
+        // crea token para reset password
         public async Task<string?> GeneratePasswordResetToken(string email)
         {
             email = email?.Trim().ToLower();
@@ -111,22 +116,24 @@ namespace EscalationAnalysisDb2.Application.Services
             return token;
         }
 
-        // obtener lista usuarios
+        // lista todos los usuarios
         public async Task<List<AppUser>> GetAllUsers()
         {
             return await _context.AppUsers.ToListAsync();
         }
 
-        // crear usuario
+        // crea usuario nuevo
         public async Task CreateUser(AppUser user)
         {
             user.Email = user.Email.Trim().ToLower();
 
+            // deja fijo el username admin
             if (user.Email == "escalationanalysis@gmail.com")
             {
                 user.Username = "admin";
             }
 
+            // guarda password encriptado
             user.Password =
                 _passwordHasher.HashPassword(user, user.Password);
 
@@ -138,13 +145,13 @@ namespace EscalationAnalysisDb2.Application.Services
             await _context.SaveChangesAsync();
         }
 
-        // buscar por id
+        // busca usuario por id
         public async Task<AppUser?> GetUserById(int id)
         {
             return await _context.AppUsers.FindAsync(id);
         }
 
-        // actualizar usuario
+        // actualiza datos del usuario
         public async Task UpdateUser(AppUser user)
         {
             user.Email = user.Email.Trim().ToLower();
@@ -159,7 +166,7 @@ namespace EscalationAnalysisDb2.Application.Services
             await _context.SaveChangesAsync();
         }
 
-        // desactivar usuario
+        // desactiva usuario
         public async Task DeactivateUser(int id)
         {
             var user = await _context.AppUsers.FindAsync(id);
@@ -167,9 +174,11 @@ namespace EscalationAnalysisDb2.Application.Services
             if (user == null)
                 return;
 
+            // no deja desactivar admin principal
             if (user.Email.ToLower() == "escalationanalysis@gmail.com")
                 return;
 
+            // evita dejar sistema sin admins
             if (user.Role == "Admin")
             {
                 var activeAdmins = await _context.AppUsers

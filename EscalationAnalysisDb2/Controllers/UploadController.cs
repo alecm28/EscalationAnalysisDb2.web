@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EscalationAnalysisDb2.Controllers
 {
+    // requiere sesion iniciada
     [Authorize]
     public class UploadController : Controller
     {
@@ -24,31 +25,30 @@ namespace EscalationAnalysisDb2.Controllers
             _context = context;
         }
 
-        // vista principal
+        // vista principal de carga
         public IActionResult Index()
         {
             return View(new List<UploadPreviewViewModel>());
         }
 
-        // preview del archivo
+        // muestra preview antes de guardar
         [HttpPost]
         public IActionResult PreviewFile(IFormFile file)
         {
-            // validar archivo seleccionado
+            // valida archivo
             if (file == null)
             {
                 TempData["ErrorMessage"] = "Please select a file.";
                 return RedirectToAction("Index");
             }
 
-            // validar vacío
             if (file.Length == 0)
             {
                 TempData["ErrorMessage"] = "The selected file is empty.";
                 return RedirectToAction("Index");
             }
 
-            // validar formato csv
+            // solo csv
             if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
             {
                 TempData["ErrorMessage"] = "Only CSV files are allowed.";
@@ -57,6 +57,7 @@ namespace EscalationAnalysisDb2.Controllers
 
             try
             {
+                // toma primeras 10 filas para preview
                 var preview = _uploadService
                     .ProcessFile(file)
                     .Take(10)
@@ -77,25 +78,23 @@ namespace EscalationAnalysisDb2.Controllers
             }
         }
 
-        // subir archivo definitivo
+        // guarda archivo definitivo
         [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            // validar archivo seleccionado
+            // valida archivo
             if (file == null)
             {
                 TempData["ErrorMessage"] = "Please select a file.";
                 return RedirectToAction("Index");
             }
 
-            // validar vacío
             if (file.Length == 0)
             {
                 TempData["ErrorMessage"] = "The selected file is empty.";
                 return RedirectToAction("Index");
             }
 
-            // validar formato csv
             if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
             {
                 TempData["ErrorMessage"] = "Only CSV files are allowed.";
@@ -112,7 +111,7 @@ namespace EscalationAnalysisDb2.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // obtener usuario logueado
+                // usuario logueado
                 var userEmail = User.Identity.Name;
 
                 var currentUser = await _context.AppUsers
@@ -124,7 +123,7 @@ namespace EscalationAnalysisDb2.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // guardar información
+                // guarda datos en bd
                 await _caseService.SaveData(
                     preview,
                     currentUser.AppUserId,

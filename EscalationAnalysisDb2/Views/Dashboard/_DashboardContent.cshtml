@@ -2,13 +2,14 @@
 
 <div id="dashboardContent">
 
-    <!-- Encabezado -->
+    <!-- encabezado -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2>Escalations</h2>
 
             @if (User.IsInRole("Admin"))
             {
+                <!-- solo admin -->
                 <a asp-controller="Users" asp-action="Index" class="btn btn-secondary mt-2">
                     Manage Users
                 </a>
@@ -20,7 +21,7 @@
         </button>
     </div>
 
-    <!-- Tarjetas superiores -->
+    <!-- tarjetas principales -->
     <div class="row mb-4">
 
         <div class="col-md-4">
@@ -50,7 +51,7 @@
 
     </div>
 
-    <!-- Trend -->
+    <!-- grafico tendencia -->
     <div class="card p-3 mb-4">
         <h5>Escalation trends</h5>
 
@@ -66,10 +67,10 @@
         }
     </div>
 
-    <!-- Inferior -->
+    <!-- seccion inferior -->
     <div class="row g-3">
 
-        <!-- TOP CUSTOMERS -->
+        <!-- top customers -->
         <div class="col-md-4">
             <div class="card p-3 summary-card">
                 <small>Top escalated customers</small>
@@ -104,7 +105,7 @@
             </div>
         </div>
 
-        <!-- TOP OWNERS -->
+        <!-- top owners -->
         <div class="col-md-4">
             <div class="card p-3 summary-card">
                 <small>Top escalated owners</small>
@@ -139,7 +140,7 @@
             </div>
         </div>
 
-        <!-- INSIGHTS -->
+        <!-- insights -->
         <div class="col-md-4">
             <div class="card p-3 summary-card">
                 <small>Insights</small>
@@ -175,11 +176,13 @@
 </div>
 
 <script>
+    // datos enviados desde c#
     const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendLabels ?? new List<string>()));
     const values = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TrendValues ?? new List<int>()));
 
     const ctx = document.getElementById('trendChart');
 
+    // crea grafico si hay datos
     if (ctx && values.some(v => v > 0)) {
         new Chart(ctx, {
             type: 'line',
@@ -203,6 +206,7 @@
         });
     }
 
+    // exporta dashboard como imagen
     function exportDashboard() {
         const element = document.getElementById("dashboardContent");
 

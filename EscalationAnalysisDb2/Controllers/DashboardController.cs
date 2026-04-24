@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EscalationAnalysisDb2.Controllers
 {
+    // requiere sesion iniciada
     [Authorize]
     public class DashboardController : Controller
     {
@@ -27,20 +28,22 @@ namespace EscalationAnalysisDb2.Controllers
             string region,
             string version)
         {
+            // evita null en lista
             severity ??= new List<int>();
 
-            // usuario actual
+            // correo del usuario logueado
             var userEmail = User.Identity.Name;
 
             var currentUser = await _context.AppUsers
                 .FirstOrDefaultAsync(x => x.Email == userEmail);
 
+            // si no encuentra usuario vuelve al login
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Auth");
             }
 
-            // admin ve todo / user solo lo suyo
+            // admin ve todo, user solo sus datos
             int? userId = null;
 
             if (!User.IsInRole("Admin"))
@@ -60,7 +63,7 @@ namespace EscalationAnalysisDb2.Controllers
             model.MostImpactedVersion = await _caseService.GetMostImpactedVersion(
                 month, severity, region, version, userId);
 
-            // tendencia
+            // datos grafico tendencia
             model.TrendValues = await _caseService.GetTrendValues(
                 month, severity, region, version, userId);
 
@@ -79,7 +82,7 @@ namespace EscalationAnalysisDb2.Controllers
             model.TopOwnerValues = await _caseService.GetTopOwnerValues(
                 month, severity, region, version, userId);
 
-            // insights
+            // insights automativos
             model.Insight1 = await _caseService.GetMainInsight1(
                 month, severity, region, version, userId);
 

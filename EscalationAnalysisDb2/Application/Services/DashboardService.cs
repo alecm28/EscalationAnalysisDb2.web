@@ -5,10 +5,9 @@ namespace EscalationAnalysisDb2.Application.Services
 {
     public class DashboardService
     {
-        // contexto de base de datos para obtener la información del dashboard
+        // acceso a base de datos
         private readonly EscalationsDbContext _context;
 
-        // constructor donde recibo el contexto
         public DashboardService(EscalationsDbContext context)
         {
             _context = context;
@@ -16,17 +15,16 @@ namespace EscalationAnalysisDb2.Application.Services
 
         public DashboardViewModel GetDashboardData()
         {
-            // creo el modelo que voy a devolver al dashboard
+            // modelo que se envia a la vista
             var model = new DashboardViewModel();
 
-            // obtengo totales generales de escalaciones y casos
+            // totales principales
             model.TotalEscalations = _context.Escalations.Count();
             model.TotalCases = _context.CaseRecords.Count();
 
-            // calculo la fecha de hace 6 meses para filtrar los datos
             var sixMonthsAgo = DateTime.Now.AddMonths(-6);
 
-            // obtengo las escalaciones de los últimos 6 meses y las agrupo por año y mes
+            // agrupa escalaciones por ano y mes
             var trends = _context.Escalations
                 .Where(e => e.EscalationDate >= sixMonthsAgo)
                 .GroupBy(e => new { e.EscalationDate.Year, e.EscalationDate.Month })
@@ -40,18 +38,17 @@ namespace EscalationAnalysisDb2.Application.Services
                 .ThenBy(x => x.Month)
                 .ToList();
 
-            // genero las etiquetas del gráfico (meses en formato corto, ej: Jan, Feb)
+            // nombres de meses para grafico
             model.TrendLabels = trends
                 .Select(x => System.Globalization.CultureInfo.CurrentCulture
                     .DateTimeFormat.GetAbbreviatedMonthName(x.Month))
                 .ToList();
 
-            // genero los valores del gráfico (cantidad de escalaciones por mes)
+            // cantidades por mes
             model.TrendValues = trends
                 .Select(x => x.Count)
                 .ToList();
 
-            // retorno el modelo completo listo para el dashboard
             return model;
         }
     }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace EscalationAnalysisDb2.Controllers
 {
+    // solo admin puede manejar usuarios
     [Authorize(Roles = "Admin")]
     public class UsersController : Controller
     {
@@ -18,14 +19,14 @@ namespace EscalationAnalysisDb2.Controllers
             _passwordHasher = new PasswordHasher<AppUser>();
         }
 
-        // LISTA DE USUARIOS
+        // lista usuarios
         public async Task<IActionResult> Index()
         {
             var users = await _userService.GetAllUsers();
             return View(users);
         }
 
-        // CREATE GET
+        // formulario crear usuario
         public IActionResult Create()
         {
             var model = new AppUser
@@ -37,28 +38,26 @@ namespace EscalationAnalysisDb2.Controllers
             return View(model);
         }
 
-        // CREATE POST
+        // guardar usuario nuevo
         [HttpPost]
         public async Task<IActionResult> Create(AppUser user)
         {
-            // LIMPIAR EMAIL
+            // limpia correo
             user.Email = user.Email?.Trim().ToLower();
 
-            // EMAIL REQUERIDO
             if (string.IsNullOrWhiteSpace(user.Email))
                 ModelState.AddModelError("", "Email is required.");
 
-            // PASSWORD REQUERIDA
             if (string.IsNullOrWhiteSpace(user.Password))
                 ModelState.AddModelError("", "Password is required.");
 
-            // ROLE VÁLIDO
+            // valida rol permitido
             if (user.Role != "Admin" && user.Role != "User")
                 ModelState.AddModelError("", "Invalid role selected.");
 
-            // VALIDAR EMAIL DUPLICADO
             var users = await _userService.GetAllUsers();
 
+            // evita correos repetidos
             if (!string.IsNullOrWhiteSpace(user.Email))
             {
                 if (users.Any(x => x.Email.ToLower() == user.Email))
@@ -67,7 +66,7 @@ namespace EscalationAnalysisDb2.Controllers
                 }
             }
 
-            // VALIDAR PASSWORD
+            // valida seguridad password
             if (!string.IsNullOrWhiteSpace(user.Password))
             {
                 if (user.Password.Length < 8 ||
@@ -80,7 +79,7 @@ namespace EscalationAnalysisDb2.Controllers
                 }
             }
 
-            // USERNAME AUTOMÁTICO
+            // crea username automatico
             if (!string.IsNullOrWhiteSpace(user.Email) &&
                 user.Email.Contains("@"))
             {
@@ -109,7 +108,7 @@ namespace EscalationAnalysisDb2.Controllers
             return RedirectToAction("Index");
         }
 
-        // EDIT GET
+        // formulario editar
         public async Task<IActionResult> Edit(int id)
         {
             var user = await _userService.GetUserById(id);
@@ -123,10 +122,11 @@ namespace EscalationAnalysisDb2.Controllers
             return View(user);
         }
 
-        // EDIT POST
+        // guardar cambios
         [HttpPost]
         public async Task<IActionResult> Edit(AppUser user, string NewPassword)
         {
+            // evita validar campos no usados aqui
             ModelState.Remove("Password");
             ModelState.Remove("Username");
 
@@ -148,6 +148,7 @@ namespace EscalationAnalysisDb2.Controllers
 
             var users = await _userService.GetAllUsers();
 
+            // valida email duplicado
             if (users.Any(x =>
                 x.AppUserId != user.AppUserId &&
                 x.Email.ToLower() == user.Email))
@@ -160,13 +161,14 @@ namespace EscalationAnalysisDb2.Controllers
             existingUser.Role = user.Role;
             existingUser.IsActive = user.IsActive;
 
+            // actualiza username desde correo
             if (!string.IsNullOrWhiteSpace(user.Email) &&
                 user.Email.Contains("@"))
             {
                 existingUser.Username = user.Email.Split('@')[0];
             }
 
-            // PASSWORD OPCIONAL
+            // password nueva opcional
             if (!string.IsNullOrWhiteSpace(NewPassword))
             {
                 if (NewPassword.Length < 8 ||
@@ -191,7 +193,7 @@ namespace EscalationAnalysisDb2.Controllers
             return RedirectToAction("Index");
         }
 
-        // DEACTIVATE USER
+        // desactivar usuario
         public async Task<IActionResult> Deactivate(int id)
         {
             var user = await _userService.GetUserById(id);
@@ -202,7 +204,7 @@ namespace EscalationAnalysisDb2.Controllers
                 return RedirectToAction("Index");
             }
 
-            // NO DESACTIVARSE A SÍ MISMO
+            // no permite desactivarse solo
             if (User.Identity.Name.ToLower() == user.Email.ToLower())
             {
                 TempData["Error"] = "You cannot deactivate your own account.";

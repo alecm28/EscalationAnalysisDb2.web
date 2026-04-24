@@ -1,4 +1,5 @@
 ﻿@{
+    // titulo que se muestra en la pagina
     ViewData["Title"] = "System Overview";
 }
 
@@ -6,7 +7,7 @@
 
     <h2 class="mb-4">System Overview</h2>
 
-    <!-- CARDS -->
+    <!-- resumen principal -->
     <div class="row mb-4">
 
         <div class="col-md-3">
@@ -34,16 +35,18 @@
             <div class="card p-3 shadow-sm">
                 <small>Last Upload</small>
                 <h6>
-                    @(ViewBag.LastUpload == DateTime.MinValue
+                    @(
+                        ViewBag.LastUpload == DateTime.MinValue
                         ? "N/A"
-                        : ((DateTime)ViewBag.LastUpload).ToString("dd/MM/yyyy"))
+                        : ((DateTime)ViewBag.LastUpload).ToString("dd/MM/yyyy")
+                        )
                 </h6>
             </div>
         </div>
 
     </div>
 
-    <!-- REPORT FORMAT -->
+    <!-- formato esperado del csv -->
     <div class="card p-4 shadow-sm mb-4">
 
         <h5>Report Upload Standards</h5>
@@ -82,7 +85,7 @@
 
     </div>
 
-    <!-- USER ADMIN RULES -->
+    <!-- reglas de usuarios -->
     <div class="card p-4 shadow-sm mb-4">
 
         <h5>User Administration Rules</h5>
@@ -97,7 +100,7 @@
 
     </div>
 
-    <!-- SECURITY -->
+    <!-- seguridad -->
     <div class="card p-4 shadow-sm mb-4">
 
         <h5>Security Notes</h5>
@@ -111,7 +114,7 @@
 
     </div>
 
-    <!-- MAINTENANCE -->
+    <!-- recomendaciones -->
     <div class="card p-4 shadow-sm">
 
         <h5>Operational Recommendations</h5>

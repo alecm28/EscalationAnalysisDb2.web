@@ -2,7 +2,7 @@
 
 <div class="container-fluid">
 
-    <!-- ALERTAS -->
+    <!-- alertas -->
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -19,7 +19,7 @@
         </div>
     }
 
-    <!-- HEADER -->
+    <!-- encabezado -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 style="color:#4c1d95;">Users</h2>
@@ -31,7 +31,7 @@
         </a>
     </div>
 
-    <!-- CARD -->
+    <!-- tarjeta principal -->
     <div class="card shadow-sm p-3">
 
         <table class="table table-hover align-middle">
@@ -50,20 +50,20 @@
                 @foreach (var user in Model)
                 {
                     <tr>
-                        <!-- USERNAME -->
+                        <!-- username -->
                         <td>@user.Username</td>
 
-                        <!-- EMAIL -->
+                        <!-- email -->
                         <td>@user.Email</td>
 
-                        <!-- ROLE -->
+                        <!-- rol -->
                         <td>
                             <span class="badge bg-secondary">
                                 @user.Role
                             </span>
                         </td>
 
-                        <!-- STATUS -->
+                        <!-- estado -->
                         <td>
                             @if (user.IsActive)
                             {
@@ -75,7 +75,7 @@
                             }
                         </td>
 
-                        <!-- ACTIONS -->
+                        <!-- acciones -->
                         <td class="text-end">
 
                             <a asp-action="Edit"

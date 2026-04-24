@@ -1,12 +1,14 @@
 ﻿@model List<EscalationAnalysisDb2.Application.ViewModels.UploadPreviewViewModel>
 
 @{
+    // titulo pagina
     ViewData["Title"] = "Upload";
 }
 
 <div class="row">
     <div class="col-md-8">
 
+        <!-- mensaje error -->
         @if (TempData["ErrorMessage"] != null)
         {
             <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 mb-4"
@@ -22,6 +24,7 @@
             </div>
         }
 
+        <!-- mensaje exito -->
         @if (TempData["SuccessMessage"] != null)
         {
             <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4"
@@ -37,7 +40,7 @@
             </div>
         }
 
-        <!-- preview -->
+        <!-- preview archivo -->
         <div class="card p-4 shadow-sm mb-4">
 
             <h5 class="mb-2">Preview Report</h5>
@@ -58,6 +61,7 @@
                         Select CSV File
                     </label>
 
+                    <!-- input oculto -->
                     <input type="file"
                            id="filePreview"
                            name="file"
@@ -72,6 +76,7 @@
                             Choose File
                         </button>
 
+                        <!-- muestra nombre -->
                         <input type="text"
                                id="filePreviewName"
                                class="form-control"
@@ -94,7 +99,7 @@
 
         </div>
 
-        <!-- upload -->
+        <!-- carga directa -->
         <div class="card p-4 shadow-sm mb-4">
 
             <h5 class="mb-2">Upload Report</h5>
@@ -152,6 +157,7 @@
 
         </div>
 
+        <!-- volver -->
         <div class="mb-4">
             <a asp-controller="Dashboard"
                asp-action="Index"
@@ -160,7 +166,7 @@
             </a>
         </div>
 
-        <!-- preview results -->
+        <!-- resultados preview -->
         @if (Model != null && Model.Any())
         {
             <div class="card p-4 shadow-sm">
@@ -204,7 +210,7 @@
     </div>
 </div>
 
-<!-- modal -->
+<!-- modal carga -->
 <div class="modal fade"
      id="loadingModal"
      tabindex="-1"
@@ -230,28 +236,31 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
+            // nombre archivo preview
             const preview = document.getElementById("filePreview");
             const previewName = document.getElementById("filePreviewName");
 
             preview.addEventListener("change", function () {
                 previewName.value =
                     preview.files.length > 0
-                    ? preview.files[0].name
-                    : "No file selected";
+                        ? preview.files[0].name
+                        : "No file selected";
             });
 
+            // nombre archivo upload
             const upload = document.getElementById("fileUpload");
             const uploadName = document.getElementById("fileUploadName");
 
             upload.addEventListener("change", function () {
                 uploadName.value =
                     upload.files.length > 0
-                    ? upload.files[0].name
-                    : "No file selected";
+                        ? upload.files[0].name
+                        : "No file selected";
             });
 
         });
 
+        // muestra mensaje en pantalla
         function showPageMessage(message) {
 
             const existing = document.getElementById("inlineWarning");
@@ -278,6 +287,7 @@
             col.prepend(box);
         }
 
+        // valida preview
         function validatePreviewFile() {
 
             const file = document.getElementById("filePreview");
@@ -290,6 +300,7 @@
             return true;
         }
 
+        // valida upload y abre modal
         function validateUploadFile() {
 
             const file = document.getElementById("fileUpload");

@@ -13,6 +13,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EscalationAnalysisDb2.Controllers
 {
+    // permite acceso sin login
     [AllowAnonymous]
     public class AuthController : Controller
     {
@@ -30,21 +31,25 @@ namespace EscalationAnalysisDb2.Controllers
             _emailService = emailService;
         }
 
+        // vista login
         public IActionResult Login()
         {
             return View();
         }
 
+        // vista forgot password
         public IActionResult ForgotPassword()
         {
             return View("~/Views/Auth/ForgotPassword.cshtml");
         }
 
+        // vista confirmacion envio correo
         public IActionResult ForgotPasswordConfirmation()
         {
             return View();
         }
 
+        // vista reset password
         public IActionResult ResetPassword(string token)
         {
             if (string.IsNullOrWhiteSpace(token))
@@ -55,6 +60,7 @@ namespace EscalationAnalysisDb2.Controllers
             return View();
         }
 
+        // envia correo de recuperacion
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(string email)
         {
@@ -66,6 +72,7 @@ namespace EscalationAnalysisDb2.Controllers
 
             email = email.Trim().ToLower();
 
+            // valida formato correo
             if (!new EmailAddressAttribute().IsValid(email))
             {
                 ModelState.AddModelError("", "Invalid email format");
@@ -74,6 +81,7 @@ namespace EscalationAnalysisDb2.Controllers
 
             var token = await _userService.GeneratePasswordResetToken(email);
 
+            // si existe usuario envia link
             if (token != null)
             {
                 var resetLink = Url.Action(
@@ -93,6 +101,7 @@ namespace EscalationAnalysisDb2.Controllers
             return RedirectToAction("ForgotPasswordConfirmation");
         }
 
+        // guarda nueva password
         [HttpPost]
         public async Task<IActionResult> ResetPassword(string token, string newPassword)
         {
@@ -112,6 +121,7 @@ namespace EscalationAnalysisDb2.Controllers
                 return View();
             }
 
+            // valida seguridad minima
             if (newPassword.Length < 8 ||
                 !newPassword.Any(char.IsUpper) ||
                 !newPassword.Any(char.IsLower) ||
@@ -122,6 +132,7 @@ namespace EscalationAnalysisDb2.Controllers
                 return View();
             }
 
+            // busca token valido
             var user = await _context.AppUsers
                 .FirstOrDefaultAsync(u =>
                     u.ResetToken == token &&
@@ -133,6 +144,7 @@ namespace EscalationAnalysisDb2.Controllers
                 return View();
             }
 
+            // encripta nueva password
             var hasher = new PasswordHasher<AppUser>();
             user.Password = hasher.HashPassword(user, newPassword);
 
@@ -144,6 +156,7 @@ namespace EscalationAnalysisDb2.Controllers
             return RedirectToAction("Login");
         }
 
+        // proceso login
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -158,7 +171,7 @@ namespace EscalationAnalysisDb2.Controllers
 
             if (user == null)
             {
-                // VALIDAR SI ESTÁ BLOQUEADO
+                // revisa si esta bloqueado
                 var blockedUser = await _context.AppUsers
                     .FirstOrDefaultAsync(u =>
                         u.Email.ToLower() == model.Email &&
@@ -179,6 +192,7 @@ namespace EscalationAnalysisDb2.Controllers
                 return View(model);
             }
 
+            // datos guardados en sesion
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Email),
@@ -198,6 +212,7 @@ namespace EscalationAnalysisDb2.Controllers
             return RedirectToAction("Index", "Dashboard");
         }
 
+        // cerrar sesion
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync();

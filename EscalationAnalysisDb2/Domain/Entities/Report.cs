@@ -1,23 +1,24 @@
 ﻿namespace EscalationAnalysisDb2.Domain.Entities
 {
-    // Representa el archivo que se sube al sistema
+    // representa archivo cargado al sistema
     public class Report
     {
+        // id principal
         public int ReportId { get; set; }
 
-        // Usuario que subió el archivo
+        // usuario que subio archivo
         public int UploadedByUserId { get; set; }
 
-        // Fecha de carga
+        // fecha de carga
         public DateTime UploadDate { get; set; }
 
-        // Nombre del archivo
+        // nombre del archivo
         public string FileName { get; set; }
 
-        // Relación con usuario
+        // relacion con usuario
         public AppUser UploadedByUser { get; set; }
 
-        // Casos que vienen en este archivo
+        // casos incluidos en este reporte
         public ICollection<CaseRecord> CaseRecords { get; set; }
             = new List<CaseRecord>();
     }

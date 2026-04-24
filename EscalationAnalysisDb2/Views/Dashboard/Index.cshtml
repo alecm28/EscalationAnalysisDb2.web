@@ -2,23 +2,24 @@
 
 <div class="row">
 
-    <!-- Sección izquierda: dashboard -->
+    <!-- lado izquierdo dashboard -->
     <div class="col-md-9">
 
         @Html.Partial("_DashboardContent", Model)
 
     </div>
 
-    <!-- Sección derecha: filtros -->
+    <!-- lado derecho filtros -->
     <div class="col-md-3">
 
         <div class="card p-3">
 
+            <!-- filtros por get -->
             <form method="get" asp-controller="Dashboard" asp-action="Index">
 
                 <h5>Filters</h5>
 
-                <!-- Filtro por mes -->
+                <!-- filtro mes -->
                 <label>Month</label>
                 <select name="month" class="form-control mb-3">
                     <option value="">All</option>
@@ -36,7 +37,7 @@
                     <option value="12">Dec</option>
                 </select>
 
-                <!-- Filtro por severidad -->
+                <!-- filtro severidad -->
                 <label>Severity</label>
                 <div class="mb-3">
                     <div><input type="checkbox" name="severity" value="1" /> Critical</div>
@@ -45,7 +46,7 @@
                     <div><input type="checkbox" name="severity" value="4" /> Low</div>
                 </div>
 
-                <!-- Filtro por región -->
+                <!-- filtro region -->
                 <label>Region</label>
                 <select name="region" class="form-control mb-3">
                     <option value="">All</option>
@@ -54,7 +55,7 @@
                     <option value="APAC">APAC</option>
                 </select>
 
-                <!-- Filtro por versión -->
+                <!-- filtro version -->
                 <label>Product version</label>
                 <select name="version" class="form-control mb-3">
                     <option value="">All</option>
@@ -65,7 +66,7 @@
                     <option value="12.1">12.1</option>
                 </select>
 
-                <!-- Botones -->
+                <!-- botones -->
                 <div class="d-flex gap-2">
 
                     <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary w-50">

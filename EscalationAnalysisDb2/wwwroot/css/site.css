@@ -1,31 +1,33 @@
-/* ===================== */
-/* BASE */
-/* ===================== */
+/* estilos base de toda la pagina */
 
 html {
+    /* tamano base de letra */
     font-size: 14px;
 }
 
 @media (min-width: 768px) {
     html {
+        /* aumenta la letra en pantallas mas grandes */
         font-size: 16px;
     }
 }
 
 html,
 body {
+    /* ocupa toda la altura de la ventana */
     height: 100%;
 }
 
 body {
+    /* elimina margenes por defecto */
     margin: 0;
+    /* color general del fondo */
     background-color: #f3f4f6;
+    /* fuente principal del sistema */
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ===================== */
-/* HEADER (TOPBAR) */
-/* ===================== */
+/* barra superior */
 
 .topbar {
     height: 60px;
@@ -35,29 +37,28 @@ body {
     justify-content: space-between;
     padding: 0 20px;
     color: white;
+    /* deja la barra fija arriba */
     position: fixed;
     top: 0;
     width: 100%;
     z-index: 1000;
 }
 
-/* ===================== */
-/* LAYOUT */
-/* ===================== */
+/* estructura principal */
 
 .main-container {
     display: flex;
+    /* alto total menos la barra superior */
     min-height: calc(100vh - 60px);
 }
 
-/* ===================== */
-/* SIDEBAR */
-/* ===================== */
+/* menu lateral */
 
 .sidebar {
     width: 220px;
     background: white;
     padding: 20px;
+    /* menu fijo al lado izquierdo */
     position: fixed;
     top: 60px;
     left: 0;
@@ -89,12 +90,12 @@ body {
             color: #4c1d95;
         }
 
-/* ===================== */
-/* CONTENT */
-/* ===================== */
+/* contenido principal */
 
 .content {
+    /* deja espacio para sidebar */
     margin-left: 220px;
+    /* deja espacio para topbar */
     margin-top: 60px;
     padding: 20px;
     width: 100%;
@@ -103,9 +104,7 @@ body {
     transition: all 0.3s ease;
 }
 
-/* ===================== */
-/* CARDS */
-/* ===================== */
+/* tarjetas */
 
 .card {
     border-radius: 12px;
@@ -116,6 +115,7 @@ body {
 }
 
     .card:hover {
+        /* pequeno efecto al pasar mouse */
         transform: translateY(-2px);
     }
 
@@ -137,9 +137,7 @@ body {
         margin-bottom: 12px;
     }
 
-/* ===================== */
-/* BUTTONS */
-/* ===================== */
+/* botones */
 
 .btn-primary {
     background-color: #4c1d95;
@@ -170,9 +168,7 @@ body {
     color: white;
 }
 
-/* ===================== */
-/* FORMS */
-/* ===================== */
+/* formularios */
 
 .form-control {
     border-radius: 8px;
@@ -198,9 +194,7 @@ body {
     margin-left: 5px;
 }
 
-/* ===================== */
-/* TABLES */
-/* ===================== */
+/* tablas */
 
 .table {
     background: white;
@@ -228,15 +222,14 @@ body {
     font-size: 12px;
 }
 
-/* ===================== */
-/* LOGIN */
-/* ===================== */
+/* login */
 
 .login-container {
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    /* fondo degradado */
     background: linear-gradient(135deg, #4c1d95, #7c3aed);
 }
 
@@ -272,9 +265,7 @@ body {
         font-weight: 500;
     }
 
-/* ===================== */
-/* SIDEBAR TOGGLE */
-/* ===================== */
+/* colapsar sidebar */
 
 .sidebar.collapsed {
     width: 0;
@@ -285,9 +276,7 @@ body {
     margin-left: 0;
 }
 
-/* ===================== */
-/* DASHBOARD BOTTOM */
-/* ===================== */
+/* tarjetas inferiores dashboard */
 
 .summary-card {
     border-radius: 14px;
@@ -302,9 +291,7 @@ body {
         margin-bottom: 14px;
     }
 
-/* ===================== */
-/* TOP BARS */
-/* ===================== */
+/* barras de progreso */
 
 .progress-item {
     margin-bottom: 16px;
@@ -342,9 +329,7 @@ body {
     background: #6d28d9;
 }
 
-/* ===================== */
-/* INSIGHTS */
-/* ===================== */
+/* insights o resumenes */
 
 .chip {
     display: flex;
@@ -364,12 +349,11 @@ body {
         font-weight: 700;
     }
 
-/* ===================== */
-/* RESPONSIVE */
-/* ===================== */
+/* responsive para celular */
 
 @media (max-width: 768px) {
     .sidebar {
+        /* oculta menu lateral */
         display: none;
     }
 

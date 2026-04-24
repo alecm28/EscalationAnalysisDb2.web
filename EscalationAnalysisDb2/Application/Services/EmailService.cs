@@ -7,9 +7,13 @@ namespace EscalationAnalysisDb2.Application.Services
     {
         public async Task SendEmail(string toEmail, string subject, string resetLink)
         {
+            // correo que envia mensajes
             var fromEmail = "escalationanalysis@gmail.com";
-            var password = "kjcldbbrjkhzgpyo"; // app password
 
+            // clave de aplicacion de gmail
+            var password = "kjcldbbrjkhzgpyo";
+
+            // configuracion smtp
             var smtpClient = new SmtpClient("smtp.gmail.com")
             {
                 Port = 587,
@@ -17,7 +21,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 EnableSsl = true,
             };
 
-            // 🔥 BODY BONITO (HTML)
+            // cuerpo html del correo
             var body = $@"
 <div style='font-family:Segoe UI, Arial; background:#f3f4f6; padding:20px;'>
 
@@ -55,7 +59,7 @@ namespace EscalationAnalysisDb2.Application.Services
 </div>
 ";
 
-            //NOMBRE DEL REMITENTE
+            // mensaje final que se envia
             var message = new MailMessage
             {
                 From = new MailAddress(fromEmail, "Escalation Analysis - Password Reset"),
@@ -64,8 +68,10 @@ namespace EscalationAnalysisDb2.Application.Services
                 IsBodyHtml = true
             };
 
+            // destinatario
             message.To.Add(toEmail);
 
+            // envio del correo
             await smtpClient.SendMailAsync(message);
         }
     }

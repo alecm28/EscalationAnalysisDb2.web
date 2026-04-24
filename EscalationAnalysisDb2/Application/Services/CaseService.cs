@@ -7,6 +7,7 @@ namespace EscalationAnalysisDb2.Application.Services
 {
     public class CaseService
     {
+        // contexto para trabajar con la bd
         private readonly EscalationsDbContext _context;
 
         public CaseService(EscalationsDbContext context)
@@ -14,12 +15,13 @@ namespace EscalationAnalysisDb2.Application.Services
             _context = context;
         }
 
-        // guardar información del archivo
+        // guarda la informacion del archivo cargado
         public async Task SaveData(
             List<UploadPreviewViewModel> data,
             int userId,
             string fileName)
         {
+            // crea historial del reporte subido
             var report = new Report
             {
                 UploadedByUserId = userId,
@@ -32,6 +34,7 @@ namespace EscalationAnalysisDb2.Application.Services
 
             foreach (var item in data)
             {
+                // si falta info importante no guarda esa fila
                 if (string.IsNullOrWhiteSpace(item.CaseNumber) ||
                     string.IsNullOrWhiteSpace(item.EscalationTask) ||
                     string.IsNullOrWhiteSpace(item.Severity) ||
@@ -48,6 +51,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 var severityId = MapSeverity(item.Severity);
                 var statusId = MapStatus(item.Status);
 
+                // guarda caso principal
                 var caseRecord = new CaseRecord
                 {
                     CaseNumber = item.CaseNumber.Trim(),
@@ -62,6 +66,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 _context.CaseRecords.Add(caseRecord);
                 await _context.SaveChangesAsync();
 
+                // guarda escalacion ligada al caso
                 var escalation = new Escalation
                 {
                     CaseRecordId = caseRecord.CaseRecordId,
@@ -77,6 +82,7 @@ namespace EscalationAnalysisDb2.Application.Services
             await _context.SaveChangesAsync();
         }
 
+        // busca cuenta y si no existe la crea
         private async Task<Account> GetOrCreateAccount(string name)
         {
             name ??= "Unknown";
@@ -98,6 +104,7 @@ namespace EscalationAnalysisDb2.Application.Services
             return account;
         }
 
+        // busca owner y si no existe lo crea
         private async Task<CaseOwner> GetOrCreateOwner(string name, string region)
         {
             name ??= "Unknown";
@@ -120,6 +127,7 @@ namespace EscalationAnalysisDb2.Application.Services
             return owner;
         }
 
+        // convierte severidad texto a id
         private int MapSeverity(string severity)
         {
             return severity?.Trim() switch
@@ -132,6 +140,7 @@ namespace EscalationAnalysisDb2.Application.Services
             };
         }
 
+        // convierte estado texto a id
         private int MapStatus(string status)
         {
             return status?.Trim() switch
@@ -144,6 +153,7 @@ namespace EscalationAnalysisDb2.Application.Services
             };
         }
 
+        // aplica filtros generales para reutilizar consultas
         private IQueryable<Escalation> ApplyFilters(
             int? month,
             List<int> severity,
@@ -160,24 +170,28 @@ namespace EscalationAnalysisDb2.Application.Services
                     .ThenInclude(c => c.Report)
                 .AsQueryable();
 
+            // filtra por usuario
             if (userId.HasValue)
             {
                 query = query.Where(e =>
                     e.CaseRecord.Report.UploadedByUserId == userId.Value);
             }
 
+            // filtra por mes
             if (month.HasValue)
             {
                 query = query.Where(e =>
                     e.EscalationDate.Month == month.Value);
             }
 
+            // filtra por severidad
             if (severity != null && severity.Any())
             {
                 query = query.Where(e =>
                     severity.Contains(e.SeverityId));
             }
 
+            // filtra por region
             if (!string.IsNullOrWhiteSpace(region))
             {
                 query = query.Where(e =>
@@ -185,6 +199,7 @@ namespace EscalationAnalysisDb2.Application.Services
                     e.CaseRecord.CaseOwner.Region.ToLower() == region.ToLower());
             }
 
+            // filtra por version
             if (!string.IsNullOrWhiteSpace(version))
             {
                 query = query.Where(e =>
@@ -195,6 +210,7 @@ namespace EscalationAnalysisDb2.Application.Services
             return query;
         }
 
+        // total de escalaciones
         public async Task<int> GetTotalEscalations(
             int? month,
             List<int> severity,
@@ -206,6 +222,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 .CountAsync();
         }
 
+        // total de casos unicos
         public async Task<int> GetTotalCases(
             int? month,
             List<int> severity,
@@ -219,6 +236,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 .CountAsync();
         }
 
+        // version con mas impacto
         public async Task<string> GetMostImpactedVersion(
             int? month,
             List<int> severity,
@@ -239,6 +257,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 : result;
         }
 
+        // valores para grafico mensual
         public async Task<List<int>> GetTrendValues(
             int? month,
             List<int> severity,
@@ -268,6 +287,7 @@ namespace EscalationAnalysisDb2.Application.Services
             return result;
         }
 
+        // nombres de meses
         public List<string> GetTrendLabels()
         {
             return new List<string>
@@ -277,6 +297,7 @@ namespace EscalationAnalysisDb2.Application.Services
             };
         }
 
+        // top clientes
         public async Task<List<string>> GetTopAccounts(
             int? month,
             List<int> severity,
@@ -292,6 +313,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 .ToListAsync();
         }
 
+        // cantidades top clientes
         public async Task<List<int>> GetTopAccountValues(
             int? month,
             List<int> severity,
@@ -307,6 +329,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 .ToListAsync();
         }
 
+        // top owners
         public async Task<List<string>> GetTopOwners(
             int? month,
             List<int> severity,
@@ -322,6 +345,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 .ToListAsync();
         }
 
+        // cantidades top owners
         public async Task<List<int>> GetTopOwnerValues(
             int? month,
             List<int> severity,
@@ -337,6 +361,7 @@ namespace EscalationAnalysisDb2.Application.Services
                 .ToListAsync();
         }
 
+        // insight porcentaje criticos
         public async Task<string> GetMainInsight1(
             int? month,
             List<int> severity,
@@ -357,6 +382,7 @@ namespace EscalationAnalysisDb2.Application.Services
             return $"Critical cases represent {percent}%";
         }
 
+        // insight severidad mas comun
         public async Task<string> GetMainInsight2(
             int? month,
             List<int> severity,
@@ -373,6 +399,7 @@ namespace EscalationAnalysisDb2.Application.Services
             return $"Most common severity is {mostCommon}";
         }
 
+        // insight tendencia entre meses
         public async Task<string> GetMainInsight3(
             int? month,
             List<int> severity,

@@ -2,34 +2,33 @@
 {
     public class UploadPreviewViewModel
     {
-        // este modelo representa cada fila del archivo que se sube
-        // básicamente aquí guardo los datos tal como vienen antes de procesarlos
+        // representa una fila del archivo antes de guardar en bd
 
-        // número del caso
+        // numero de caso
         public string CaseNumber { get; set; }
 
-        // id o nombre de la escalación
+        // nombre o id de escalacion
         public string EscalationTask { get; set; }
 
-        // severidad en texto (ej: Critical, High, etc.)
+        // severidad en texto
         public string Severity { get; set; }
 
-        // estado del caso
+        // estado actual
         public string Status { get; set; }
 
-        // persona encargada del caso
+        // owner responsable
         public string Owner { get; set; }
 
-        // cuenta o cliente
+        // cliente o cuenta
         public string Account { get; set; }
 
-        // región, no siempre viene en el archivo
+        // region del owner
         public string Region { get; set; }
 
-        // versión del producto
+        // version del producto
         public string ProductVersion { get; set; }
 
-        // fecha de la escalación (puede venir vacía)
+        // fecha de escalacion
         public DateTime? EscalationDate { get; set; }
     }
 }

@@ -4,20 +4,21 @@
 
     <div class="card p-4 shadow-sm" style="max-width:500px; margin:auto; border-radius:12px;">
 
-        <!-- TITULO -->
+        <!-- titulo -->
         <h4 class="mb-3">Create User</h4>
         <p class="text-muted mb-4">Add a new system user</p>
 
+        <!-- formulario crear -->
         <form asp-action="Create" method="post" autocomplete="off">
 
-            <!-- VALIDACIONES -->
+            <!-- errores -->
             <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-            <!-- CAMPOS FALSOS PARA EVITAR AUTOFILL -->
+            <!-- campos ocultos para autofill -->
             <input type="text" name="fakeUsername" style="display:none" autocomplete="username" />
             <input type="password" name="fakePassword" style="display:none" autocomplete="new-password" />
 
-            <!-- EMAIL -->
+            <!-- email -->
             <div class="mb-3">
                 <label class="form-label">Email</label>
                 <input asp-for="Email"
@@ -28,7 +29,7 @@
                        oninput="this.setCustomValidity('')" />
             </div>
 
-            <!-- PASSWORD -->
+            <!-- password -->
             <div class="mb-3">
                 <label class="form-label">Password</label>
                 <input asp-for="Password"
@@ -40,7 +41,7 @@
                        oninput="this.setCustomValidity('')" />
             </div>
 
-            <!-- ROLE -->
+            <!-- rol -->
             <div class="mb-3">
                 <label class="form-label">Role</label>
                 <select asp-for="Role" class="form-control">
@@ -49,13 +50,13 @@
                 </select>
             </div>
 
-            <!-- ACTIVE -->
+            <!-- activo -->
             <div class="form-check mb-4">
                 <input asp-for="IsActive" type="checkbox" class="form-check-input" />
                 <label class="form-check-label">Active</label>
             </div>
 
-            <!-- BOTONES -->
+            <!-- botones -->
             <div class="d-flex gap-2">
 
                 <button type="submit" class="btn btn-primary w-50">
