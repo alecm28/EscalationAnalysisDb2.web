@@ -1,130 +1,186 @@
 ﻿@{
-    // titulo que se muestra en la pagina
     ViewData["Title"] = "System Overview";
 }
 
 <div class="container-fluid">
 
-    <h2 class="mb-4">System Overview</h2>
+    <!-- encabezado -->
+    <div class="mb-4">
+        <h2 class="fw-bold" style="color:#4c1d95;">System Overview</h2>
+        <p class="text-muted mb-0">
+            Administrative metrics and platform activity
+        </p>
+    </div>
 
-    <!-- resumen principal -->
-    <div class="row mb-4">
+    <!-- tarjetas principales -->
+    <div class="row g-3 mb-4">
 
         <div class="col-md-3">
-            <div class="card p-3 shadow-sm">
-                <small>Total Users</small>
-                <h3>@ViewBag.TotalUsers</h3>
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <small class="text-muted">Total Users</small>
+                <h2 class="fw-bold mb-0">@ViewBag.TotalUsers</h2>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card p-3 shadow-sm">
-                <small>Active Users</small>
-                <h3>@ViewBag.ActiveUsers</h3>
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <small class="text-muted">Active Users</small>
+                <h2 class="fw-bold text-success mb-0">@ViewBag.ActiveUsers</h2>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card p-3 shadow-sm">
-                <small>Total Reports</small>
-                <h3>@ViewBag.TotalReports</h3>
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <small class="text-muted">Inactive Users</small>
+                <h2 class="fw-bold text-danger mb-0">
+                    @(ViewBag.TotalUsers - ViewBag.ActiveUsers)
+                </h2>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card p-3 shadow-sm">
-                <small>Last Upload</small>
-                <h6>
-                    @(
-                        ViewBag.LastUpload == DateTime.MinValue
-                        ? "N/A"
-                        : ((DateTime)ViewBag.LastUpload).ToString("dd/MM/yyyy")
-                        )
-                </h6>
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <small class="text-muted">Total Reports</small>
+                <h2 class="fw-bold mb-0">@ViewBag.TotalReports</h2>
             </div>
         </div>
 
     </div>
 
-    <!-- formato esperado del csv -->
-    <div class="card p-4 shadow-sm mb-4">
+    <!-- segunda fila -->
+    <div class="row g-3 mb-4">
 
-        <h5>Report Upload Standards</h5>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
 
-        <p class="text-muted">
-            Reports should be uploaded in CSV format and contain the expected columns.
-        </p>
+                <h5 class="mb-3">Last Upload</h5>
+
+                <h4 class="fw-bold" style="color:#4c1d95;">
+
+                    @(
+                        ViewBag.LastUpload == DateTime.MinValue
+                        ? "N/A"
+                        : ((DateTime)ViewBag.LastUpload).ToString("dd/MM/yyyy HH:mm")
+                        )
+
+                </h4>
+
+                <small class="text-muted">
+                    Most recent uploaded report in the platform
+                </small>
+
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+
+                <h5 class="mb-3">Quick Status</h5>
+
+                <div class="mb-2 d-flex justify-content-between">
+                    <span>Total Accounts Enabled</span>
+                    <strong>@ViewBag.ActiveUsers</strong>
+                </div>
+
+                <div class="mb-2 d-flex justify-content-between">
+                    <span>Total Accounts Disabled</span>
+                    <strong>
+                        @(ViewBag.TotalUsers - ViewBag.ActiveUsers)
+                    </strong>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <span>Reports Loaded</span>
+                    <strong>@ViewBag.TotalReports</strong>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- reportes recientes -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Recent Reports</h5>
+            <small class="text-muted">Latest 5 uploads</small>
+        </div>
 
         <div class="table-responsive">
-            <table class="table table-bordered">
+
+            <table class="table align-middle table-hover">
 
                 <thead class="table-light">
                     <tr>
-                        <th>CaseNumber</th>
-                        <th>EscalationTask</th>
-                        <th>Severity</th>
-                        <th>Status</th>
-                        <th>Owner</th>
-                        <th>Account</th>
+                        <th>File Name</th>
+                        <th>Uploaded By</th>
+                        <th>Date</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    <tr>
-                        <td>TS02134567</td>
-                        <td>ES00124</td>
-                        <td>1 (Critical)</td>
-                        <td>IBM is working</td>
-                        <td>John Smith</td>
-                        <td>Bank Corp</td>
-                    </tr>
+
+                    @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
+                    {
+                        @foreach (var report in ViewBag.RecentReports)
+                        {
+                            <tr>
+                                <td>@report.FileName</td>
+                                <td>@report.UploadedByUser?.Email</td>
+                                <td>@report.UploadDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">
+                                No reports found.
+                            </td>
+                        </tr>
+                    }
+
                 </tbody>
 
             </table>
+
         </div>
 
     </div>
 
-    <!-- reglas de usuarios -->
-    <div class="card p-4 shadow-sm mb-4">
+    <!-- reglas -->
+    <div class="row g-3">
 
-        <h5>User Administration Rules</h5>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
 
-        <ul>
-            <li>Users must be created with valid corporate email addresses.</li>
-            <li>Admin role has full visibility of reports and users.</li>
-            <li>User role can only access personal uploads.</li>
-            <li>Inactive users cannot log in.</li>
-            <li>Password reset should be managed through admin process.</li>
-        </ul>
+                <h5>User Rules</h5>
 
-    </div>
+                <ul class="mb-0">
+                    <li>Only valid emails can be registered.</li>
+                    <li>Inactive users cannot log in.</li>
+                    <li>Admin users manage accounts and reports.</li>
+                    <li>User accounts have limited permissions.</li>
+                </ul>
 
-    <!-- seguridad -->
-    <div class="card p-4 shadow-sm mb-4">
+            </div>
+        </div>
 
-        <h5>Security Notes</h5>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
 
-        <ul>
-            <li>Always log out after use.</li>
-            <li>Only authorized users may upload reports.</li>
-            <li>Do not upload confidential data outside approved scope.</li>
-            <li>User access is role-based.</li>
-        </ul>
+                <h5>Operational Notes</h5>
 
-    </div>
+                <ul class="mb-0">
+                    <li>Review uploads periodically.</li>
+                    <li>Keep user list updated.</li>
+                    <li>Validate files before upload.</li>
+                    <li>Monitor report activity monthly.</li>
+                </ul>
 
-    <!-- recomendaciones -->
-    <div class="card p-4 shadow-sm">
-
-        <h5>Operational Recommendations</h5>
-
-        <ul>
-            <li>Review report history periodically.</li>
-            <li>Keep active user list updated.</li>
-            <li>Validate CSV format before upload.</li>
-            <li>Use dashboard filters for monthly reviews.</li>
-        </ul>
+            </div>
+        </div>
 
     </div>
 

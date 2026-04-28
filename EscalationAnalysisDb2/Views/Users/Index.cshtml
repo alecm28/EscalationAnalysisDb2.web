@@ -20,92 +20,113 @@
     }
 
     <!-- encabezado -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h2 style="color:#4c1d95;">Users</h2>
+            <h2 class="fw-bold mb-1" style="color:#4c1d95;">Users</h2>
             <small class="text-muted">Manage system users</small>
         </div>
 
-        <a asp-action="Create" class="btn btn-primary">
+        <a asp-action="Create" class="btn btn-primary px-4">
             + Create New User
         </a>
     </div>
 
     <!-- tarjeta principal -->
-    <div class="card shadow-sm p-3">
+    <div class="card shadow-sm border-0 rounded-4">
 
-        <table class="table table-hover align-middle">
+        <div class="card-body p-0">
 
-            <thead style="background-color:#f3f0ff;">
-                <tr>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
+            <div class="table-responsive">
 
-            <tbody>
-                @foreach (var user in Model)
-                {
-                    <tr>
-                        <!-- username -->
-                        <td>@user.Username</td>
+                <table class="table table-hover align-middle mb-0">
 
-                        <!-- email -->
-                        <td>@user.Email</td>
+                    <thead style="background-color:#f3f0ff;">
+                        <tr>
+                            <th class="ps-4">Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
 
-                        <!-- rol -->
-                        <td>
-                            <span class="badge bg-secondary">
-                                @user.Role
-                            </span>
-                        </td>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
 
-                        <!-- estado -->
-                        <td>
-                            @if (user.IsActive)
-                            {
-                                <span class="badge bg-success">Active</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">Inactive</span>
-                            }
-                        </td>
+                                <!-- email -->
+                                <td class="ps-4 fw-semibold">
+                                    @user.Email
+                                </td>
 
-                        <!-- acciones -->
-                        <td class="text-end">
+                                <!-- rol -->
+                                <td>
+                                    @if (user.Role == "Admin")
+                                    {
+                                        <span class="badge rounded-pill bg-dark">
+                                            Admin
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge rounded-pill bg-secondary">
+                                            User
+                                        </span>
+                                    }
+                                </td>
 
-                            <a asp-action="Edit"
-                               asp-route-id="@user.AppUserId"
-                               class="btn btn-sm btn-outline-primary me-2">
-                                Edit
-                            </a>
+                                <!-- estado -->
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge rounded-pill bg-success">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge rounded-pill bg-danger">
+                                            Inactive
+                                        </span>
+                                    }
+                                </td>
 
-                            @if (user.IsActive)
-                            {
-                                <a asp-action="Deactivate"
-                                   asp-route-id="@user.AppUserId"
-                                   class="btn btn-sm btn-outline-danger"
-                                   onclick="return confirm('Are you sure you want to deactivate this user?');">
-                                    Deactivate
-                                </a>
-                            }
-                            else
-                            {
-                                <button class="btn btn-sm btn-outline-secondary" disabled>
-                                    Inactive
-                                </button>
-                            }
+                                <!-- acciones -->
+                                <td class="text-end pe-4">
 
-                        </td>
-                    </tr>
-                }
-            </tbody>
+                                    <a asp-action="Edit"
+                                       asp-route-id="@user.AppUserId"
+                                       class="btn btn-sm btn-outline-primary me-2">
+                                        Edit
+                                    </a>
 
-        </table>
+                                    @if (user.IsActive)
+                                    {
+                                        <a asp-action="Deactivate"
+                                           asp-route-id="@user.AppUserId"
+                                           class="btn btn-sm btn-outline-danger"
+                                           onclick="return confirm('Are you sure you want to deactivate this user?');">
+                                            Deactivate
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-outline-secondary" disabled>
+                                            Inactive
+                                        </button>
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
 
     </div>
 

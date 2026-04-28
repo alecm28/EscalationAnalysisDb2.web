@@ -11,7 +11,8 @@ namespace EscalationAnalysisDb2.Application.Services
             var fromEmail = "escalationanalysis@gmail.com";
 
             // clave de aplicacion de gmail
-            var password = "kjcldbbrjkhzgpyo";
+            //var password = "kjcldbbrjkhzgpyo";
+            var password = "wmywlpvlqfcjpcdj";
 
             // configuracion smtp
             var smtpClient = new SmtpClient("smtp.gmail.com")

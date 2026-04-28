@@ -3,6 +3,7 @@ using EscalationAnalysisDb2.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using System.Text.RegularExpressions;
 
 namespace EscalationAnalysisDb2.Controllers
 {
@@ -50,6 +51,17 @@ namespace EscalationAnalysisDb2.Controllers
 
             if (string.IsNullOrWhiteSpace(user.Password))
                 ModelState.AddModelError("", "Password is required.");
+
+            // valida formato correo
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+
+                if (!emailRegex.IsMatch(user.Email))
+                {
+                    ModelState.AddModelError("", "Please enter a valid email address.");
+                }
+            }
 
             // valida rol permitido
             if (user.Role != "Admin" && user.Role != "User")
@@ -131,6 +143,20 @@ namespace EscalationAnalysisDb2.Controllers
             ModelState.Remove("Username");
 
             user.Email = user.Email?.Trim().ToLower();
+
+            if (string.IsNullOrWhiteSpace(user.Email))
+                ModelState.AddModelError("", "Email is required.");
+
+            // valida formato correo
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+
+                if (!emailRegex.IsMatch(user.Email))
+                {
+                    ModelState.AddModelError("", "Please enter a valid email address.");
+                }
+            }
 
             if (user.Role != "Admin" && user.Role != "User")
                 ModelState.AddModelError("", "Invalid role selected.");

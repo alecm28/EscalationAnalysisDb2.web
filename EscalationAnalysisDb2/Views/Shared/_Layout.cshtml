@@ -58,11 +58,15 @@
 
             <ul>
 
-                <li>
-                    <a asp-controller="Dashboard" asp-action="Index">
-                        Dashboard
-                    </a>
-                </li>
+                @if (!User.IsInRole("Admin"))
+                {
+                    <!-- dashboard solo usuario normal -->
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index">
+                            Dashboard
+                        </a>
+                    </li>
+                }
 
                 <li>
                     <a asp-controller="Upload" asp-action="Index">

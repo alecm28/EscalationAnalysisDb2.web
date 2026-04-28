@@ -123,6 +123,19 @@ namespace EscalationAnalysisDb2.Controllers
                     return RedirectToAction("Index");
                 }
 
+                // valida reporte duplicado por usuario
+                var alreadyExists = await _context.Reports.AnyAsync(x =>
+                    x.UploadedByUserId == currentUser.AppUserId &&
+                    x.FileName.ToLower() == file.FileName.ToLower());
+
+                if (alreadyExists)
+                {
+                    TempData["ErrorMessage"] =
+                        "You have already uploaded a report with this file name.";
+
+                    return RedirectToAction("Index");
+                }
+
                 // guarda datos en bd
                 await _caseService.SaveData(
                     preview,

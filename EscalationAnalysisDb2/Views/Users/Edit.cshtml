@@ -17,27 +17,34 @@
             <!-- errores -->
             <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-            <!-- email -->
+            <!-- email bloqueado -->
             <div class="mb-3">
                 <label class="form-label">Email</label>
+
                 <input asp-for="Email"
                        class="form-control"
-                       required
-                       oninvalid="this.setCustomValidity('Please complete this field.')"
-                       oninput="this.setCustomValidity('')" />
+                       readonly
+                       style="background-color:#f8f9fa; cursor:not-allowed;" />
+
+                <small class="text-muted">
+                    Email cannot be changed after user creation.
+                </small>
             </div>
 
             <!-- nueva password opcional -->
             <div class="mb-3">
                 <label class="form-label">New Password</label>
+
                 <input name="NewPassword"
                        type="password"
-                       class="form-control" />
+                       class="form-control"
+                       placeholder="Leave blank to keep current password" />
             </div>
 
             <!-- rol -->
             <div class="mb-3">
                 <label class="form-label">Role</label>
+
                 <select asp-for="Role" class="form-control">
                     <option value="Admin">Admin</option>
                     <option value="User">User</option>
@@ -46,8 +53,13 @@
 
             <!-- activo -->
             <div class="form-check mb-4">
-                <input asp-for="IsActive" type="checkbox" class="form-check-input" />
-                <label class="form-check-label">Active</label>
+                <input asp-for="IsActive"
+                       type="checkbox"
+                       class="form-check-input" />
+
+                <label class="form-check-label">
+                    Active
+                </label>
             </div>
 
             <!-- botones -->
@@ -57,7 +69,9 @@
                     Update
                 </button>
 
-                <a asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary w-50">
+                <a asp-controller="Users"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary w-50">
                     Back to list
                 </a>
 

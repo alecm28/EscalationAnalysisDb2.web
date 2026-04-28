@@ -1,7 +1,6 @@
 ﻿@model List<EscalationAnalysisDb2.Application.ViewModels.UploadPreviewViewModel>
 
 @{
-    // titulo pagina
     ViewData["Title"] = "Upload";
 }
 
@@ -40,22 +39,20 @@
             </div>
         }
 
-        <!-- preview archivo -->
+        <!-- carga principal -->
         <div class="card p-4 shadow-sm mb-4">
 
-            <h5 class="mb-2">Preview Report</h5>
+            <h5 class="mb-2">Upload Report</h5>
 
             <p class="text-muted mb-4">
-                Review the file before processing it.
+                Select a CSV file and choose how to continue.
             </p>
 
-            <form asp-controller="Upload"
-                  asp-action="PreviewFile"
+            <form id="mainUploadForm"
                   method="post"
-                  enctype="multipart/form-data"
-                  onsubmit="return validatePreviewFile()">
+                  enctype="multipart/form-data">
 
-                <div class="mb-3">
+                <div class="mb-4">
 
                     <label class="form-label fw-semibold">
                         Select CSV File
@@ -63,7 +60,7 @@
 
                     <!-- input oculto -->
                     <input type="file"
-                           id="filePreview"
+                           id="mainFile"
                            name="file"
                            accept=".csv"
                            hidden />
@@ -72,13 +69,12 @@
 
                         <button type="button"
                                 class="btn btn-outline-secondary"
-                                onclick="document.getElementById('filePreview').click()">
+                                onclick="document.getElementById('mainFile').click()">
                             Choose File
                         </button>
 
-                        <!-- muestra nombre -->
                         <input type="text"
-                               id="filePreviewName"
+                               id="mainFileName"
                                class="form-control"
                                value="No file selected"
                                readonly />
@@ -91,67 +87,26 @@
 
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100">
-                    Preview Report
-                </button>
+                <!-- botones -->
+                <div class="row g-2">
 
-            </form>
-
-        </div>
-
-        <!-- carga directa -->
-        <div class="card p-4 shadow-sm mb-4">
-
-            <h5 class="mb-2">Upload Report</h5>
-
-            <p class="text-muted mb-4">
-                Upload the file directly and continue to dashboard.
-            </p>
-
-            <form id="uploadForm"
-                  asp-controller="Upload"
-                  asp-action="UploadFile"
-                  method="post"
-                  enctype="multipart/form-data"
-                  onsubmit="return validateUploadFile()">
-
-                <div class="mb-3">
-
-                    <label class="form-label fw-semibold">
-                        Select CSV File
-                    </label>
-
-                    <input type="file"
-                           id="fileUpload"
-                           name="file"
-                           accept=".csv"
-                           hidden />
-
-                    <div class="d-flex gap-2">
-
+                    <div class="col-md-6">
                         <button type="button"
-                                class="btn btn-outline-secondary"
-                                onclick="document.getElementById('fileUpload').click()">
-                            Choose File
+                                class="btn btn-primary w-100"
+                                onclick="submitPreview()">
+                            Preview Report
                         </button>
-
-                        <input type="text"
-                               id="fileUploadName"
-                               class="form-control"
-                               value="No file selected"
-                               readonly />
-
                     </div>
 
-                    <small class="text-muted">
-                        Only CSV files are allowed.
-                    </small>
+                    <div class="col-md-6">
+                        <button type="button"
+                                class="btn btn-success w-100"
+                                onclick="submitUpload()">
+                            Upload Report
+                        </button>
+                    </div>
 
                 </div>
-
-                <button type="submit" class="btn btn-success w-100">
-                    Upload Report
-                </button>
 
             </form>
 
@@ -236,31 +191,20 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-            // nombre archivo preview
-            const preview = document.getElementById("filePreview");
-            const previewName = document.getElementById("filePreviewName");
+            const file = document.getElementById("mainFile");
+            const fileName = document.getElementById("mainFileName");
 
-            preview.addEventListener("change", function () {
-                previewName.value =
-                    preview.files.length > 0
-                        ? preview.files[0].name
+            file.addEventListener("change", function () {
+
+                fileName.value =
+                    file.files.length > 0
+                        ? file.files[0].name
                         : "No file selected";
-            });
 
-            // nombre archivo upload
-            const upload = document.getElementById("fileUpload");
-            const uploadName = document.getElementById("fileUploadName");
-
-            upload.addEventListener("change", function () {
-                uploadName.value =
-                    upload.files.length > 0
-                        ? upload.files[0].name
-                        : "No file selected";
             });
 
         });
 
-        // muestra mensaje en pantalla
         function showPageMessage(message) {
 
             const existing = document.getElementById("inlineWarning");
@@ -271,26 +215,21 @@
             const box = document.createElement("div");
 
             box.id = "inlineWarning";
-
-            box.className =
-                "alert alert-warning shadow-sm border-0 mb-4";
-
+            box.className = "alert alert-warning shadow-sm border-0 mb-4";
             box.style.background = "#fff3cd";
             box.style.color = "#664d03";
             box.style.borderLeft = "5px solid #ffc107";
 
-            box.innerHTML =
-                "<strong>Notice:</strong> " + message;
+            box.innerHTML = "<strong>Notice:</strong> " + message;
 
             const col = document.querySelector(".col-md-8");
 
             col.prepend(box);
         }
 
-        // valida preview
-        function validatePreviewFile() {
+        function validateFile() {
 
-            const file = document.getElementById("filePreview");
+            const file = document.getElementById("mainFile");
 
             if (file.files.length === 0) {
                 showPageMessage("Please select a file.");
@@ -300,15 +239,21 @@
             return true;
         }
 
-        // valida upload y abre modal
-        function validateUploadFile() {
+        function submitPreview() {
 
-            const file = document.getElementById("fileUpload");
+            if (!validateFile())
+                return;
 
-            if (file.files.length === 0) {
-                showPageMessage("Please select a file.");
-                return false;
-            }
+            const form = document.getElementById("mainUploadForm");
+
+            form.action = "/Upload/PreviewFile";
+            form.submit();
+        }
+
+        function submitUpload() {
+
+            if (!validateFile())
+                return;
 
             var modal = new bootstrap.Modal(
                 document.getElementById("loadingModal")
@@ -316,7 +261,10 @@
 
             modal.show();
 
-            return true;
+            const form = document.getElementById("mainUploadForm");
+
+            form.action = "/Upload/UploadFile";
+            form.submit();
         }
     </script>
 }

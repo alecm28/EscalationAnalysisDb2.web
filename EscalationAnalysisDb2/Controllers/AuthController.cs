@@ -209,6 +209,10 @@ namespace EscalationAnalysisDb2.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
 
+            // redireccion segun rol
+            if (user.Role == "Admin")
+                return RedirectToAction("Index", "Admin");
+
             return RedirectToAction("Index", "Dashboard");
         }
 

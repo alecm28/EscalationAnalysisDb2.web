@@ -154,14 +154,39 @@ namespace EscalationAnalysisDb2.Application.Services
         // actualiza datos del usuario
         public async Task UpdateUser(AppUser user)
         {
-            user.Email = user.Email.Trim().ToLower();
+            var existingUser = await _context.AppUsers
+                .FirstOrDefaultAsync(x => x.AppUserId == user.AppUserId);
 
-            if (user.Email == "escalationanalysis@gmail.com")
+            if (existingUser == null)
+                return;
+
+            existingUser.Email = user.Email.Trim().ToLower();
+            existingUser.Role = user.Role;
+            existingUser.IsActive = user.IsActive;
+            existingUser.Password = user.Password;
+
+            // admin principal mantiene username fijo
+            if (existingUser.Email == "escalationanalysis@gmail.com")
             {
-                user.Username = "admin";
+                existingUser.Username = "admin";
             }
+            else
+            {
+                var baseUsername = existingUser.Email.Split('@')[0];
+                var username = baseUsername;
+                int counter = 1;
 
-            _context.AppUsers.Update(user);
+                // evita duplicados
+                while (await _context.AppUsers.AnyAsync(x =>
+                    x.AppUserId != existingUser.AppUserId &&
+                    x.Username == username))
+                {
+                    username = baseUsername + counter;
+                    counter++;
+                }
+
+                existingUser.Username = username;
+            }
 
             await _context.SaveChangesAsync();
         }
